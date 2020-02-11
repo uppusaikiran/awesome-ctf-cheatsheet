@@ -323,7 +323,6 @@
 * [GDB Peda](https://github.com/longld/peda)
 * [Search Code - Based on Funcion name and code-snippet](https://searchcode.com/)
 
-***
 
 ### Recover Files from Deleted File Systems
 * To Extract Flag from the file system - `strings /dev/sdb`
