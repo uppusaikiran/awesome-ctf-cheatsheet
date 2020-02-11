@@ -162,7 +162,7 @@
 
 ## Cryptography
 * If there is word `caesar` in the question or hint, this can be a substitution cipher.
-  * Use this website ww* This [site](https://www.guballa.de/vigenere-solver) is great at breaking Vigenère ciphers without knowing the key.
+  * Use this website [Link](https://www.guballa.de/vigenere-solver) for breaking Vigenère ciphers without knowing the key.
 * If you find `!` in the cipher text and cipher seems to be within certain range of Letters and appears to be transposition of a plain text, Use this website [Ceasar Box](https://www.dcode.fr/caesar-box-cipher)w.dcode.fr/caesar-cipher to Bruteforce the hidden message.
 * To solve One Time Pad : [OTP](http://rumkin.com/tools/cipher/otp.php)
 
