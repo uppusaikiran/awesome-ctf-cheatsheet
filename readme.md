@@ -118,24 +118,11 @@
   
 ### RECONNAISSANCE
 #### TOOLS:
-* Whois
-* Nslookup
-* dnsrecon
-* Google Fu
-* dig
-* [Sublist3r](https://github.com/aboul3la/Sublist3r)
-* Bluto
-* [crt.sh](http://crt.sh)
+* Whois, Nslookup, Dnsrecon, Google Fu, Dig
+* [Sublist3r](https://github.com/aboul3la/Sublist3r) , Bluto , [crt.sh](http://crt.sh)
 * [Hunter.io](https://hunter.io/)  -- Gather Email about a Company
-* Fingerprinting
-  * Nmap 
-  * Wappalyzer
-  * Whatweb
-  * Builtwith
-  * Netcat
-* Data breaches
-  * HaveIbeenPwned
-  * `pip install bluto` -- Tool to gather Information Recon
+* Fingerprinting : Nmap, Wappalyzer, Whatweb, Builtwith, Netcat
+* Data breaches : HaveIbeenPwned
 * Use foxy Proxy Firefox adddon for switching for Burp Suite
 * Use scope filter with this filter `.*\.irobot\.com$`
 * Use [SecurityHeaders](https://securityheaders.com/) to find some misconfigured header information on target website.
