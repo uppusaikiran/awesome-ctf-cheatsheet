@@ -1,4 +1,4 @@
-# Awesome CTF cheatsheet [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
+# Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
 > A currated list of all capture the flag tips and strategies.
 
@@ -110,17 +110,18 @@
 
 ## Web Hacking
 ## 5 Stages of Hacking
-  * Reconnaissance
-  * Scanning and Enumeration
-  * Gaining Access
-  * Maintaining Access
-  * Covering Tracks
+* Reconnaissance
+* Scanning and Enumeration
+* Gaining Access
+* Maintaining Access
+* Covering Tracks
   
 ### RECONNAISSANCE
-#### TOOLS:
+#### TOOLS
 * Whois, Nslookup, Dnsrecon, Google Fu, Dig
-* [Sublist3r](https://github.com/aboul3la/Sublist3r) , Bluto , [crt.sh](http://crt.sh)
-* [Hunter.io](https://hunter.io/)  -- Gather Email about a Company
+* [Sublist3r](https://github.com/aboul3la/Sublist3r) 
+* Bluto,[crt.sh](http://crt.sh)
+* [Hunter.io](https://hunter.io/) - Gather Email about a Company.
 * Fingerprinting : Nmap, Wappalyzer, Whatweb, Builtwith, Netcat
 * Data breaches : HaveIbeenPwned
 * Use foxy Proxy Firefox adddon for switching for Burp Suite
@@ -133,7 +134,7 @@
 ### SCANNING
 * `nmap -sn <NETWORK>` -- Ping Sweep
 * `nmap -T4 <NETWORK>` -- SYN Scan with Speed of 4 and port of common 1000 TCP
-* `nmap -T4 -A -p- <NETWORK>` -- All Port scan with All Scanning including OS, Version, Script and Traceroute
+* `nmap -T4 -A -p- <NETWORK>` -- All Port scan with All Scanning including OS, Version, Script and Traceroute.
 * `nmap -sU -T4 <NETWORK>` -- UDP Ports, Dont scan all scans, as it takes lot of time.
 
 
@@ -147,8 +148,8 @@
 
 ## File Hacking
 * If something is hidden on a pdf which we need to find, we can Press Ctrl + A to copy everything on the pdf and paste on notepad.
-   * If nothing is found, we can use [Inkspace tool](https://inkscape.org) to paste the pdf and try to ungroup several times to extract any hidden flag.
-   * We can even solve using pdf-uncompress tools like qpdf to convert compressed data to redeable format and solve from there.
+  * If nothing is found, we can use [Inkspace tool](https://inkscape.org) to paste the pdf and try to ungroup several times to extract any hidden flag.
+  * We can even solve using pdf-uncompress tools like qpdf to convert compressed data to redeable format and solve from there.
 * If there is `PK` at the start of the file in the magic bytes, its most probably `ZIP` File.
 * If there is recursive ZIP File, we can use the following command `binwalk -Me <FILE_NAME>`.
 * If EXE file is having some hidden text, we can use hexeditor or strings to locate the flag.
@@ -168,11 +169,11 @@
 ## Forensics
 * If there is a image given, try `file` comamnd on the image to learn more information.
 * Binwalk to find data inside the image or sometimes if binwalk reports as zip Archive, we can rename the file to <FILE_NAME>.zip to find interesting data.
-   * Command `binwalk <IMAGE_NAME>`
+  * Command `binwalk <IMAGE_NAME>`
 * If there is ntfs file,extract with 7Zip on Windowds. If there is a file with alternative data strems, we can use the command `dir /R <FILE_NAME>` and then we can this command to extract data inside it `cat <HIDDEN_STREAM> > asdf.<FILE_TYPE>`
 * Method to extract ntfs in Linux : `sudo mount -o loop <FILENAME.ntfs> mnt`
 * To extract data from Image files, we can use `zsteg <FILE_NAME>`
-* Javascript Deobfuscator [Jsnice](http://www.jsnice.org/) 
+* JavaScript Deobfuscator [Jsnice](http://www.jsnice.org/) 
 * To check metadata `exiftool <FILE_NAME>`
 * GrepToWin : `strings <FILE_NAME> | grep flag{`
 * StegHide `steghide extract -sf <FILE_NAME>`
@@ -219,18 +220,18 @@
 * Try `sudo -l` to check what can be run with no-password.
 * For windows:
   * In meterpreter shell try `getsystem`
-  * In meterpreter shell try `background` and then follow rest of commands...
+  * In meterpreter shell try `background` and then follow rest of commands.
   * search suggester
   * `use post/multi/recon/local_exploit_suggestor` (Example only)
   * `show options`
   * `set session 1`
   * `run`
-  * If worked fine, else Try follow rest of commands...
+  * If worked fine, else Try follow rest of commands.
   * Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
   * Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
   * If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
 * For Linux:
-  * If `sudo -l` gives something like this...
+  * If `sudo -l` gives something like this.
   ```
   User www-data may run the following commands on bashed:
     (enemy : enemy) NOPASSWD: ALL
@@ -308,12 +309,12 @@
   
 ## Tools
 * Reconnoitre [Links](https://github.com/codingo/Reconnoitre) -- A security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
-   * `reconnoitre -t 10.10.10.37 -o `pwd` --services`
+  * `reconnoitre -t 10.10.10.37 -o `pwd` --services`
 * Total Commander - multi purpose terminal for Hacking. Link : www.ghisler.com
-* CTF Exploitation Framework : Github.com/Gallopsled/pwntools `pip install pwntools`
+* CTF Exploitation Framework : GitHub.com/Gallopsled/pwntools `pip install pwntools`
 * When using GDB, we can create "~/.gdbinit" file and add this line "set disassembly-flavor intel" to make intel synatx.
 * Dirbuster for enumeration web server Attacks.
-* [Gobuster](https://github.com/OJ/gobuster) for advanced enumeration
+* [Gobuster](https://github.com/OJ/gobuster) - Used for advanced enumeration.
 * [Nmap Automator](https://github.com/21y4d/nmapAutomator)
 * 7z Password Cracking: Use tool `7z2john`
 * SSH Password Cracking: `/usr/share/john/ssh2john.py id_rsa > output.hash`
@@ -340,14 +341,14 @@
 * To bypass execution policy `powershell.exe -exec bypass`
 
 ### BufferOverflow
-* To generate shellcode quickly, we can use..
+* To generate shellcode quickly, we can use.
   * `python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh))`
   * `(python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln`
  
 ### XSS Attack
 * If there is a website, with a text field to submit, we can try XSS Attack.
   * Use any online HTTP Bin website like https://webhook.site/#!/
-  * ``` ""> <img src="https://webhook.site/19df1f1a-2ec8-453e-b85b-ed2cab66a5cc>"```
+  - ``` ""> <img src="https://webhook.site/19df1f1a-2ec8-453e-b85b-ed2cab66a5cc>"```
   
 ### Packet Capture
 * If usb keys are mapped with pcap, we can use this Article to extract usb keys entered: [Link](https://medium.com/@ali.bawazeeer/kaizen-ctf-2018-reverse-engineer-usb-keystrok-from-pcap-file-2412351679f4)
