@@ -1,4 +1,3 @@
-# Awesome CLI
+# Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-Awesome CLI is a simple command line tool to give you a fancy command line interface to dive into [Awesome](https://github.com/sindresorhus/awesome) lists.
-
+> A currated list of all capture the flag tips and strategies.
