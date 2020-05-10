@@ -516,7 +516,7 @@ If there is `JOHN` in the title or text or hint, its mostly reference to `JOHN t
 > $ john <HASHES_FILE> --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 
-To crack well known hashes, use [Link](hashes.org)
+To crack well known hashes, use [Link](https://hashes.org)
 
 ### SAM Hashes
 
