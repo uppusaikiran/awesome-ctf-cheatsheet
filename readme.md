@@ -275,3 +275,21 @@ To track all Application & library calls of a program.
 > $ ltrace ./<PROG_NAME>
 ```
 
+## Cryptography
+
+### Caesar Cipher 
+
+If there is word `caesar` in the question or hint, it can be a substitution cipher.
+
+If you find `!` in the cipher text and cipher seems to be within certain range of Letters and appears to be transposition of a plain text, Use this website [Ceasar Box](https://www.dcode.fr/caesar-box-cipher) to Bruteforce the hidden message.
+
+### Vigenere Cipher
+
+To break Vigenere ciphers without knowing the key.
+* Use this website [Link](https://www.guballa.de/vigenere-solver) - Bruteforce solver.
+
+### One Time Pad Cipher
+To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
+
+## How To Contribute
+Please follow the instructions in [CONTRIBUTING](contributing.md) file and beware of [CODE_OF_CONDUCT](code-of-conduct.md).
