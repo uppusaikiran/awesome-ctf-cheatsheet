@@ -160,11 +160,14 @@ If RPC is open, we can login using rpclient.
 ## Web Hacking
 
 ### Five Stages of Web Hacking
+
+```
     * Reconnaissance
     * Scanning and Enumeration
     * Gaining Access
     * Maintaining Access
     * Covering Tracks
+```
 
 ### Enumeration and Reconnaissance Tools
 
