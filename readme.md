@@ -244,9 +244,9 @@ To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen 
 ### Extract hidden text from PDF Files
 
 If something is hidden on a pdf which we need to find, we can Press `Ctrl + A` to copy everything on the pdf and paste on notepad.
-  * If nothing is found, we can use [Inkspace tool](https://inkscape.org) to paste the pdf and try to ungroup several times to extract any hidden flag.
-  * Else solve using pdf-uncompress tools like `qpdf` to convert compressed data to redeable format.
-  
+If nothing is found, we can use [Inkspace tool](https://inkscape.org) to paste the pdf and try to ungroup several times to extract any hidden flag.
+Else solve using pdf-uncompress tools like `qpdf` to convert compressed data to redeable format.
+
 ### Compress File Extraction
 
 If there is `PK` at the start of the file in the magic bytes, its most probably `ZIP` File.
