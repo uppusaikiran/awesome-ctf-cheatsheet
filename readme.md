@@ -342,9 +342,57 @@ To extract ntfs file system on Linux.
 > $ sudo mount -o loop <FILENAME.ntfs> mnt
 ```
 
-### Javascript Deobfuscator
+### JavaScript Deobfuscator
 
-To Deobfuscate Javascript, use [Jsnice](http://www.jsnice.org/).
+To Deobfuscate JavaScript, use [Jsnice](http://www.jsnice.org/).
+
+## Password Cracking
+
+### JOHN the ripper
+
+If there is `JOHN` in the title or text or hint, its mostly reference to `JOHN the ripper` for bruteforce passwords/hashes.
+```
+> $ john <HASHES_FILE> --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+To crack well known hashes, use [Link](hashes.org)
+
+### SAM Hashes
+
+To get System User Hashes, we can follow this method.
+```
+> $ /mnt/vhd/Windows/System32/config# cp SAM SYSTEM ~/CTF/
+> $ /mnt/vhd/Windows/System32/config# cd ~/CTF/
+> ~/CTF# ls
+  SAM  SYSTEM  
+> ~/CTF# mkdir Backup_dump
+> ~/CTF# mv SAM SYSTEM Backup_dump/
+> ~/CTF# cd Backup_dump/
+> ~/CTF/Backup_dump# ls
+  SAM  SYSTEM
+> ~/CTF/Backup_dump# impacket-secretsdump -sam SAM -system SYSTEM local
+  Impacket v0.9.20 - Copyright 2019 SecureAuth Corporation
+
+  [*] Target system bootKey: 0x8b56b2cb5033d8e2e289c26f8939a25f
+  [*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
+  Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+  Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
+  User:1000:aad3b435b51404eeaad3b435b51404ee:26112010952d963c8dc4217daec986d9:::
+  [*] Cleaning up... 
+```
+
+### Linux User Hashes
+If we able to extract /etc/passwd and /etc/shadow file we can use `unshadow`
+```
+> $ unshadow <PASSWD> <SHADOW>
+```
+
+### Hashcat
+
+To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace it accordingly.
+```
+> $ hashcat -m 500 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt --force
+```
 
 
 ## How To Contribute
