@@ -291,5 +291,61 @@ To break Vigenere ciphers without knowing the key.
 ### One Time Pad Cipher
 To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
 
+## Forensics
+
+### Image File
+
+Try `file` comamnd on the image to learn more information.
+
+To extract data inside Image files.
+
+```
+> $ zsteg <FILE_NAME>
+```
+
+To check for metadata of the Image files.
+
+```
+> $ exiftool <FILE_NAME>
+```
+
+To search for particular string or flag in an Image file.
+
+```
+> $ strings <FILE_NAME> | grep flag{
+```
+
+To extract data hidden inside an image file protected with password.
+
+```
+> $ steghide extract -sf <FILE_NAME>
+```
+
+### Binwalk
+
+Binwalk helps to find data inside the image or sometimes if binwalk reports as zip Archive, we can rename the file to <FILE_NAME>.zip to find interesting data.
+```
+> $ binwalk <IMAGE_NAME>
+```
+
+### Extract NTFS Filesystem
+
+```
+If there is ntfs file, extract with 7Zip on Windowds. 
+If there is a file with alternative data strems, we can use the command `dir /R <FILE_NAME>`.
+Then we can this command to extract data inside it `cat <HIDDEN_STREAM> > asdf.<FILE_TYPE>`
+```
+
+To extract ntfs file system on Linux.
+
+```
+> $ sudo mount -o loop <FILENAME.ntfs> mnt
+```
+
+### Javascript Deobfuscator
+
+To Deobfuscate Javascript, use [Jsnice](http://www.jsnice.org/).
+
+
 ## How To Contribute
 Please follow the instructions in [CONTRIBUTING](contributing.md) file and beware of [CODE_OF_CONDUCT](code-of-conduct.md).
