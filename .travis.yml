@@ -1,14 +1,5 @@
-language: generic
-
-sudo: required
-
-addons:
-    apt:
-        packages:
-            - nodejs
-
-before_script:
-  - npm install --global awesome-lint
-
-after_success: |
-    awesome-lint
+language: node_js
+node_js:
+  - 'node'
+# git:
+#   depth: false
