@@ -13,6 +13,7 @@
   - [Netdiscover Scanning](#netdiscover-scanning)
   - [Nikto Scanning](#nikto-scanning)
   - [WebServer is Open](#webserver-is-open)
+  - [Directory Bursting](#directory-bursting)
   - [SMB is Open](#smb-is-open)
   - [To Extract and Mount VHD Drive Files](#to-extract-and-mount-vhd-drive-files)
   - [To search for Exploits on Metasploit by Name](#to-search-for-exploits-on-metasploit-by-name)
@@ -116,9 +117,44 @@ To scan for vulnerabilities use Nikto.
 
 If Port 80 or 443 is open, we can look for robots.txt to check for hidden flags or clues.
 
-To find the Webserver version, Use Curl tool.
+To find the Webserver version, Use Curl tool with `I` flag.
 ```
-> $ curl --header <SERVER_IP>
+> $ curl -I <SERVER_IP>
+HTTP/1.1 200 OK
+Date: Mon, 11 May 2020 05:18:21
+Server: gws
+Last-Modified: Mon, 11 May 2020 05:18:21
+Content-Length: 4171
+Content-Type: text/html
+Connection: Closed
+```
+
+If Port 80 is Closed and its the only port opened on the machine, it can be due to presence of IDS or Port knocking.
+* We can give a timeout and try scanning after sometime to check if the port is still closed.
+* To check if Port is Open without knocking on IDS using TCP Scan instead of SYN Scan.
+```
+> $ nmap -p 80 <SERVER_IP> -sT
+Starting Nmap 7.80 ( https://nmap.org ) 
+Nmap scan report for 10.10.10.168
+Host is up (0.038s latency).
+
+PORT     STATE  SERVICE
+80/tcp   closed http
+Nmap done: 1 IP address (1 host up) scanned in 0.17 seconds
+```
+
+### Directory Bursting
+
+To enumerate directories on a webserver, Use wfuzz.
+
+```
+> $ wfuzz -u http://<SERVER_IP>/FUZZ/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+
+********************************************************
+* Wfuzz 2.4.5 - The Web Fuzzer                         *
+********************************************************
+
+Target: http://<SERVER_IP>/FUZZ/
 ```
 
 ### SMB is Open
