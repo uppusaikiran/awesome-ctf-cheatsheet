@@ -130,8 +130,8 @@ Connection: Closed
 ```
 
 If Port 80 is Closed and its the only port opened on the machine, it can be due to presence of IDS or Port knocking.
-* We can give a timeout and try scanning after sometime to check if the port is still closed.
-* To check if Port is Open without knocking on IDS using TCP Scan instead of SYN Scan.
+- We can give a timeout and try scanning after sometime to check if the port is still closed.
+- To check if Port is Open without knocking on IDS using TCP Scan instead of SYN Scan.
 ```
 > $ nmap -p 80 <SERVER_IP> -sT
 Starting Nmap 7.80 ( https://nmap.org ) 
