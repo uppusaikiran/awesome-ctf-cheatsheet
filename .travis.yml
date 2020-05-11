@@ -10,6 +10,5 @@ addons:
 after_success: |
     which node &&
     node --version && 
-    cd awesome-ctf-cheatsheet &&
     npm install --global awesome-lint && 
     awesome-lint
