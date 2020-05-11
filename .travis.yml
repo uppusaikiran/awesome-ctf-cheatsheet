@@ -10,5 +10,6 @@ addons:
 after_success: |
     which node &&
     node --version && 
-    npm install --global awesome-lint 
+    npm install --global awesome-lint
+after_success: 
     awesome-lint
