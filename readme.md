@@ -1,7 +1,8 @@
 # Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge.svg)](https://awesome.re)
 
-> A currated list of all capture the flag tips and strategies.
+> A currated list of all capture the flag tips and strategies to solve Online CTF challenges and Hackthebox Machines.
 
+[![Build Status](https://travis-ci.org/uppusaikiran/awesome-ctf-cheatsheet.svg?branch=master)](https://travis-ci.org/uppusaikiran/awesome-ctf-cheatsheet)
 ---
 
 ## Contents
