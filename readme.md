@@ -16,7 +16,7 @@
   - [SMB is Open](#smb-is-open)
   - [To Extract and Mount VHD Drive Files](#to-extract-and-mount-vhd-drive-files)
   - [To search for Exploits on Metasploit by Name](#to-search-for-exploits-on-metasploit-by-name)
-- [Wordpress Open](#wordpress-open)
+  - [Wordpress Open](#wordpress-open)
   - [RPC Open](#rpc-open)
   - [Powershell](#powershell)
 - [Web Hacking](#web-hacking)
@@ -187,7 +187,7 @@ Listing archive: <FILENAME>.vhd
 > $ searchsploit apache 1.2.4
 ```
 
-## Wordpress Open
+### Wordpress Open
 
 If `/wp-login.php` is found in the Enumeration scanning, it can be Wordpress site.
 
