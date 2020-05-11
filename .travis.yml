@@ -8,4 +8,8 @@ addons:
             - nodejs
 
 after_success: |
-    which node
+    which node &&
+    node --version && 
+    cd awesome-ctf-cheatsheet &&
+    npm install --global awesome-lint && 
+    awesome-lint
