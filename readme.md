@@ -1,6 +1,9 @@
-# Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)
+# Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)[<img src="media/icons8-hacking.svg" align="right" width="150">](https://electronjs.org)
+
 
 > A currated list of all capture the flag tips and strategies to solve Online CTF challenges and Hackthebox Machines.
+
+
 
 ---
 
