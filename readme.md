@@ -1,4 +1,4 @@
-# Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge.svg)](https://github.com/uppusaikiran/awesome-ctf-cheatsheet)
+# Awesome Ctf Cheatsheet [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)
 
 > A currated list of all capture the flag tips and strategies to solve Online CTF challenges and Hackthebox Machines.
 
