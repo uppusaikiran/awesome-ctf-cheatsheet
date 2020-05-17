@@ -23,6 +23,7 @@
   - [Wordpress Open](#wordpress-open)
   - [RPC Open](#rpc-open)
   - [Powershell](#powershell)
+  - [NOSql Code Injection](#nosql-code-injection)
 - [Web Hacking](#web-hacking)
   - [Five Stages of Web Hacking](#five-stages-of-web-hacking)
   - [Enumeration and Reconnaissance Tools](#enumeration-and-reconnaissance-tools)
@@ -40,6 +41,8 @@
   - [Caesar Cipher](#caesar-cipher)
   - [Vigenere Cipher](#vigenere-cipher)
   - [One Time Pad Cipher](#one-time-pad-cipher)
+  - [7z Password Cracking](#7z-password-cracking)
+  - [SSH Password Cracking](#ssh-password-cracking)
 - [Forensics](#forensics)
   - [Image File](#image-file)
   - [Binwalk](#binwalk)
@@ -65,7 +68,6 @@
   - [Transfer Files from Host to Target Machine](#transfer-files-from-host-to-target-machine)
 - [Tools](#tools)
   - [Reconnoitre](#reconnoitre)
-- [How To Contribute](#how-to-contribute)
 
 <!-- tocstop -->
 
@@ -263,7 +265,8 @@ To bypass execution policy
 > $ powershell.exe -exec bypass
 ```
 
-### NOSql Code Injection.
+### NOSql Code Injection
+
 ```
 username[$ne]=help&password[$ne]=help&login=login
 ```
@@ -765,10 +768,10 @@ www-data@machine:/var/www/html$ export TERM=xterm
 ## Tools
 
 - [Total Commander](www.ghisler.com) - Multi purpose terminal.
-- [CTF Exploitation](https://github.com/Gallopsled/pwntools) - CTF Exploitation Framework 
+- [CTF Exploitation](https://github.com/Gallopsled/pwntools) - CTF Exploitation Framework.
 - [Gobuster](https://github.com/OJ/gobuster) - Directory Enumeration.
 - [Nmap Automator](https://github.com/21y4d/nmapAutomator) - Nmap Automation Script.
-- [Quipqiup](https://quipqiup.com/) -  - Substitution Cipher Solver
+- [Quipqiup](https://quipqiup.com/) -  - Substitution Cipher Solver.
 - [GDB Peda](https://github.com/longld/peda) - Peda Extension for GDB Debugger.
 - [Search Code](https://searchcode.com/) - Based on Funcion name and code-snippet.
 - [Juice Shop](https://github.com/bkimminich/juice-shop) - Highly vulnerable web app.
@@ -781,6 +784,3 @@ Security tool for multithreaded information gathering and service enumeration wh
 ```
 > $ reconnoitre -t 10.10.10.37 -o `pwd` --services`
 ```
-
-## How To Contribute
-Please follow the instructions in [CONTRIBUTING](contributing.md) file and beware of [CODE_OF_CONDUCT](code-of-conduct.md).
