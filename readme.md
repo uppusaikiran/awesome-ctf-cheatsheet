@@ -57,17 +57,6 @@
   - [SSH Password Cracking](#ssh-password-cracking)
 - [Privilige Escalation](#privilige-escalation)
   - [Standard Scripts for Enumeration](#standard-scripts-for-enumeration)
-  - [Dirtycow](#dirtycow)
-  - [Sudo](#sudo)
-  - [Gain More Privilige on windows system](#gain-more-privilige-on-windows-system)
-  - [MYSQL with Sudo Privilage](#mysql-with-sudo-privilage)
-  - [VIM Editor with Sudo Privilage](#vim-editor-with-sudo-privilage)
-  - [Cronjob](#cronjob)
-  - [More or Less Command](#more-or-less-command)
-  - [Improve Shell](#improve-shell)
-  - [Transfer Files from Host to Target Machine](#transfer-files-from-host-to-target-machine)
-  - [FTP](#ftp)
-- [Tools](#tools)
   - [Reconnoitre](#reconnoitre)
 
 <!-- tocstop -->
