@@ -152,6 +152,16 @@ To enumerate directories on a webserver, Use wfuzz.
 Target: http://<SERVER_IP>/FUZZ/
 ```
 
+### Generating Wordlist from the Website
+
+```
+> $ cewl -w wordlist.txt -d 10 -m 1 http://<SERVER_IP>/
+
+$ wc wordlist.txt 
+ 354  354 2459 wordlist.txt
+```
+
+
 ### SMB is Open
 
 If SMB has misconfigured anonymous login, Use smbclient to list shares.
