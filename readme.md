@@ -645,7 +645,6 @@ To crack encrypted ssh key use `ssh2john` tool.
 - [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
 - [JAWS](https://github.com/411Hall/JAWS) - Windows Enumeration Script.
 - [Cyberchef](https://github.com/gchq/CyberChef) - A web app for encryption, encoding, compression and data analysis.
-- [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
 - [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
 
 #### Dirtycow 
