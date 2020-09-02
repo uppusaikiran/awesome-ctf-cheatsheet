@@ -17,6 +17,7 @@
   - [Nikto Scanning](#nikto-scanning)
   - [WebServer is Open](#webserver-is-open)
   - [Directory Bursting](#directory-bursting)
+  - [Generating Wordlist from the Website])(#generating-wordlist-from-the-website)
   - [SMB is Open](#smb-is-open)
   - [To Extract and Mount VHD Drive Files](#to-extract-and-mount-vhd-drive-files)
   - [To search for Exploits on Metasploit by Name](#to-search-for-exploits-on-metasploit-by-name)
