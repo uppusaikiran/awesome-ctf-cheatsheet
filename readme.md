@@ -69,7 +69,7 @@
 To scan for systems and Open Services/Ports, Use Nmap.
 
 ```
-> $ namp -sV <HOST_IP>
+> $ nmap -sV <HOST_IP>
 ```
 To scan for Vulnerabilities on system.
 
