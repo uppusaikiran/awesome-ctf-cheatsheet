@@ -1,7 +1,7 @@
 # Awesome CTF Cheatsheet [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)[<img src="media/icons8-hacking.svg" align="right" width="150">](https://uppusaikiran.github.io/hacking/Capture-the-Flag-CheatSheet/)
 
 
-> A currated list of all capture the flag tips and strategies to solve Online CTF challenges and Hackthebox Machines.
+> A curated list of all capture the flag tips and strategies to solve Online CTF challenges and Hackthebox Machines.
 
 
 
@@ -56,7 +56,7 @@
   - [Hashcat](#hashcat)
   - [7z Password Cracking](#7z-password-cracking)
   - [SSH Password Cracking](#ssh-password-cracking)
-- [Privilige Escalation](#privilige-escalation)
+- [Privilege Escalation](#privilege-escalation)
   - [Standard Scripts for Enumeration](#standard-scripts-for-enumeration)
   - [Reconnoitre](#reconnoitre)
 
@@ -322,7 +322,7 @@ All Port scan with All Scanning including OS, Version, Script and Traceroute.
 > $ nmap -T4 -A -p- <NETWORK>
 ```
 
-To scan for UDP Ports (Dont scan all scans, as it takes lot of time).
+To scan for UDP Ports (Don't scan all ports, as it takes a lot of time).
 
 
 ```
@@ -476,7 +476,7 @@ If file is having some hidden text, we can use `hexeditor` or `strings` commands
 
 If hidden text has == at the end, it is `base64` encoded.
 
-To monitor the appplication calls of a binary.
+To monitor the application calls of a binary.
 
 ```
 > $ strace -s -f 12345 -e trace=recv,read <PROGRAM>
@@ -494,7 +494,7 @@ To track all Application & library calls of a program.
 
 If there is word `caesar` in the question or hint, it can be a substitution cipher.
 
-If you find `!` in the cipher text and cipher seems to be within certain range of Letters and appears to be transposition of a plain text, Use this website [Ceasar Box](https://www.dcode.fr/caesar-box-cipher) to Bruteforce the hidden message.
+If you find `!` in the cipher text and cipher seems to be within certain range of Letters and appears to be transposition of a plain text, Use this website [Caesar Box](https://www.dcode.fr/caesar-box-cipher) to Bruteforce the hidden message.
 
 ### Vigenere Cipher
 
@@ -513,7 +513,7 @@ To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
 
 ### Image File
 
-Try `file` comamnd on the image to learn more information.
+Try `file` command on the image to learn more information.
 
 To extract data inside Image files.
 
@@ -549,8 +549,8 @@ Binwalk helps to find data inside the image or sometimes if binwalk reports as z
 ### Extract NTFS Filesystem
 
 ```
-If there is ntfs file, extract with 7Zip on Windowds. 
-If there is a file with alternative data strems, we can use the command `dir /R <FILE_NAME>`.
+If there is ntfs file, extract with 7Zip on Windows. 
+If there is a file with alternative data streams, we can use the command `dir /R <FILE_NAME>`.
 Then we can this command to extract data inside it `cat <HIDDEN_STREAM> > asdf.<FILE_TYPE>`
 ```
 
@@ -635,17 +635,17 @@ To extract 7z password, Use tool `7z2john`
 
 To crack encrypted ssh key use `ssh2john` tool.
 
-## Privilige Escalation
+## Privilege Escalation
 
 ### Standard Scripts for Enumeration
-- [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
+- [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilege Enumeration Checker.
 - [Awesome Priv](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)
 - [Lin Enum Script](https://github.com/rebootuser/LinEnum)
 - [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
-- [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
+- [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, processes on target system.
 - [JAWS](https://github.com/411Hall/JAWS) - Windows Enumeration Script.
 - [Cyberchef](https://github.com/gchq/CyberChef) - A web app for encryption, encoding, compression and data analysis.
-- [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
+- [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, processes.
 - [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
 
 #### Dirtycow 
@@ -714,7 +714,7 @@ uid=0(root) gid=1001(user) groups=1001(user)
 ```
 
 
-#### Gain More Privilige on windows system
+#### Gain More Privilege on windows system
 - In meterpreter shell try `getsystem`
 - In meterpreter shell try `background` and then follow rest of commands.
 - search suggester
@@ -727,7 +727,7 @@ run
 - If worked fine, else Try follow rest of commands.
 - Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
 - Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
-- If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
+- If current process doesnt own Privs, use `migrate <PID>` to get more Privileges in Meterpreter.
 
 
 To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
@@ -739,14 +739,14 @@ To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
 msf5 exploit(multi/handler) >         
 ```
 
-#### MYSQL with Sudo Privilage
+#### MYSQL with Sudo Privilege
 
 To get Shell from MYSQL
 ```
 mysql> \! /bin/sh
 ```
 
-#### VIM Editor with Sudo Privilage
+#### VIM Editor with Sudo Privilege
 
 To get Shell from VIM.
 
