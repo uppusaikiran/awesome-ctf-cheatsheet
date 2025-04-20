@@ -158,7 +158,7 @@ Useful for documentation or later review.
 Leverage Nmap's script database (`ls /usr/share/nmap/scripts/`) to explore more targeted scripts based on your CTF scenario.
 
 Stay stealthy when required, and always adapt your scanning strategy to the time constraints and rules of the challenge.
-```
+
 
 
 ### Netdiscover Scanning
