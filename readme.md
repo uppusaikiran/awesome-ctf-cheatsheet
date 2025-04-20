@@ -215,23 +215,74 @@ Unlike Nmap, this does not actively probe. Good for avoiding detection in blue t
 
 For maximum effectiveness, always complement passive scanning with active tools (like Nmap) once initial targets are discovered.
 
-
+---
 
 ### Nikto Scanning
 
-To scan for vulnerabilities use Nikto.
+To scan for web vulnerabilities using **Nikto**, a powerful web server scanner that tests for thousands of known issues.
 
+```bash
+nikto -h <HOST_IP>
 ```
-> $ nikto -h <HOST_IP>
+
+This tool is effective for identifying outdated software, insecure configurations, and common CVEs.
+
+---
+
+### 🎯 Pro Tips for CTFs Using Nikto:
+
+- **Scan HTTPS hosts with SSL support:**
+```bash
+nikto -h https://<HOST_IP>
 ```
+Detects SSL-specific vulnerabilities.
 
-### WebServer is Open 
-
-If Port 80 or 443 is open, we can look for robots.txt to check for hidden flags or clues.
-
-To find the Webserver version, Use Curl tool with `I` flag.
+- **Save output to a file for review or reporting:**
+```bash
+nikto -h <HOST_IP> -output nikto_scan.txt
 ```
-> $ curl -I <SERVER_IP>
+Useful for documentation or post-exploitation analysis.
+
+- **Scan specific ports (e.g., 8080, 8443):**
+```bash
+nikto -h <HOST_IP> -p 8080
+```
+Often CTFs run web servers on non-standard ports.
+
+- **Use with web proxies (e.g., Burp Suite):**
+```bash
+nikto -h <HOST_IP> -useproxy http://127.0.0.1:8080
+```
+Intercept and analyze requests manually.
+
+- **Combine with other tools:**
+Use Nikto findings to feed into further attacks with tools like `gobuster`, `wpscan`, or custom scripts.
+
+---
+
+**Note:** Nikto is noisy and easily detectable. Avoid using in stealth/red team scenarios unless allowed.
+
+
+### Web Server Enumeration
+
+When ports **80 (HTTP)** or **443 (HTTPS)** are open, it likely indicates a web service. This presents an opportunity to enumerate for flags, directories, and version-specific vulnerabilities.
+
+---
+
+### 🔍 Basic Web Checks
+
+- **Check for hidden paths (robots.txt):**
+```bash
+curl http://<HOST_IP>/robots.txt
+```
+Common in CTFs for holding easter eggs or clues.
+
+- **Identify the Web Server and Version:**
+```bash
+curl -I <HOST_IP>
+```
+**Sample Output:**
+```
 HTTP/1.1 200 OK
 Date: Mon, 11 May 2020 05:18:21
 Server: gws
@@ -240,20 +291,58 @@ Content-Length: 4171
 Content-Type: text/html
 Connection: Closed
 ```
+Look at the `Server:` header to find out if it’s Apache, Nginx, or a specific vendor.
 
-If Port 80 is Closed and its the only port opened on the machine, it can be due to presence of IDS or Port knocking.
-- We can give a timeout and try scanning after sometime to check if the port is still closed.
-- To check if Port is Open without knocking on IDS using TCP Scan instead of SYN Scan.
+---
+
+### 🛡️ If Port 80 is Closed But Expected to Be Open
+
+This may indicate:
+- Presence of **Intrusion Detection System (IDS)**
+- **Port knocking** mechanism in place
+
+#### Workarounds:
+- **Rescan with a delay:**
+```bash
+sleep 10 && nmap -p 80 <HOST_IP>
 ```
-> $ nmap -p 80 <SERVER_IP> -sT
-Starting Nmap 7.80 ( https://nmap.org ) 
-Nmap scan report for 10.10.10.168
-Host is up (0.038s latency).
+Sometimes port availability changes after time or after other ports are probed.
 
+- **Use TCP connect scan to bypass SYN scan restrictions:**
+```bash
+nmap -p 80 -sT <HOST_IP>
+```
+Example output:
+```
 PORT     STATE  SERVICE
 80/tcp   closed http
-Nmap done: 1 IP address (1 host up) scanned in 0.17 seconds
 ```
+SYN scans (`-sS`) may be blocked or filtered by the firewall, while `-sT` (full TCP handshake) can bypass it in some setups.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Use tools like `whatweb` or `wappalyzer`** to detect CMS or frameworks.
+```bash
+whatweb <HOST_IP>
+```
+
+- **Combine with `gobuster` or `dirsearch`** for brute-forcing directories:
+```bash
+gobuster dir -u http://<HOST_IP> -w /usr/share/wordlists/dirb/common.txt
+```
+
+- **Always check for default creds if CMS is identified** (e.g., `admin:admin`, `guest:guest`).
+
+- **Use Burp Suite or ZAP for deeper inspection** when a login portal or forms are found.
+
+- **Try alternative ports like 8080, 8000, or 8443** if no web app is found on 80/443.
+
+---
+
+Web services often hold CTF flags in directories, source code comments, or misconfigurations. Always inspect thoroughly!
+
 
 ### Directory Bursting
 
