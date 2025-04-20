@@ -66,26 +66,100 @@
 
 ### Nmap Scanning
 
-To scan for systems and Open Services/Ports, Use Nmap.
 
-```
-> $ nmap -sV <HOST_IP>
-```
-To scan for Vulnerabilities on system.
+To discover hosts, services, and vulnerabilities efficiently in CTF environments, Nmap is a critical tool. Below are curated commands and strategies:
 
-```
-> $ nmap --script vuln <HOST_IP>
-```
-To scan for all ports, SYN Scan and OS detection.
+---
 
+#### 🔍 Discover Live Hosts in a Subnet:
+```bash
+nmap -sn 10.10.0.0/24
 ```
-> $ nmap -sS -T4 -A -p- <HOST_IP>
-```
-To scan using inbuilt nmap scripts.
+Use this to quickly find which machines are up.
 
+#### 🔧 Service and Version Detection:
+```bash
+nmap -sV <HOST_IP>
 ```
-> $ nmap --script ssl-enum-ciphers -p 443  <HOST_IP>
+Identify open ports and the version of services running.
+
+#### 🚨 Vulnerability Scanning:
+```bash
+nmap --script vuln <HOST_IP>
 ```
+Uses default vulnerability detection scripts against known services.
+
+#### 🔍 Aggressive Full Port + OS Detection + Script Scanning:
+```bash
+nmap -sS -T4 -A -p- <HOST_IP>
+```
+Scans all 65535 TCP ports with OS, version detection, script scanning and traceroute.
+
+#### 🔐 SSL/TLS Enumeration:
+```bash
+nmap --script ssl-enum-ciphers -p 443 <HOST_IP>
+```
+Displays supported SSL/TLS ciphers for HTTPS services.
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Scan Specific Ports Quickly:**
+```bash
+nmap -sS -p 21,22,80,443 <HOST_IP>
+```
+Focus on commonly used service ports.
+
+- **Use Top Ports Only (Fast Scan):**
+```bash
+nmap --top-ports 100 -T4 <HOST_IP>
+```
+Scans the 100 most common ports.
+
+- **UDP Scanning:**
+```bash
+nmap -sU -T4 -F <HOST_IP>
+```
+Useful for services like DNS (53), SNMP (161).
+
+- **Brute Force Login Scripts (use responsibly):**
+```bash
+nmap --script ftp-brute -p 21 <HOST_IP>
+```
+Try brute force login on exposed FTP.
+
+- **Find HTTP Hidden Paths or Directories:**
+```bash
+nmap --script http-enum -p 80 <HOST_IP>
+```
+List web directories.
+
+- **Detect SMB Shares:**
+```bash
+nmap --script smb-enum-shares -p 445 <HOST_IP>
+```
+Helpful for lateral movement or sensitive info.
+
+- **Aggressive Script Scan for All Services:**
+```bash
+nmap -sC -sV <HOST_IP>
+```
+Runs a set of default scripts for information gathering.
+
+- **Scan Output to File (For Notes):**
+```bash
+nmap -sV -oN scan.txt <HOST_IP>
+```
+Useful for documentation or later review.
+
+---
+
+Leverage Nmap's script database (`ls /usr/share/nmap/scripts/`) to explore more targeted scripts based on your CTF scenario.
+
+Stay stealthy when required, and always adapt your scanning strategy to the time constraints and rules of the challenge.
+```
+
 
 ### Netdiscover Scanning
 
