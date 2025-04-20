@@ -160,20 +160,62 @@ Leverage Nmap's script database (`ls /usr/share/nmap/scripts/`) to explore more 
 Stay stealthy when required, and always adapt your scanning strategy to the time constraints and rules of the challenge.
 
 
-
 ### Netdiscover Scanning
 
-To passively discover machines on the network, Use Netdiscover.
+To passively discover machines on the network, use **Netdiscover**. It listens for ARP requests to identify live hosts without sending packets, making it ideal for stealth reconnaissance in CTFs or red team exercises.
 
+```bash
+netdiscover -i <INTERFACE>
 ```
-> $ netdiscover -i <INTERFACE>
-  Currently scanning: 192.168.17.0/16   |   Screen View: Unique Hosts                                                           3 Captured ARP Req/Rep packets, from 8 hosts.   Total size: 480                                                               _____________________________________________________________________________
-   IP            At MAC Address     Count     Len  MAC Vendor / Hostname      
-  -----------------------------------------------------------------------------
-  192.168.1.1     11:22:33:44:55:66      1      60  NETGEAR                                                                                           
-  192.168.1.2     21:22:33:44:55:66      1      60  Apple, Inc.                                                                                      
-  192.168.1.8     41:22:33:44:55:66      1      60  Intel Corporate 
+
+If unsure of your interface, identify it using:
+```bash
+ip a
+# or
+ifconfig
 ```
+
+**Sample Output:**
+```
+Currently scanning: 192.168.17.0/16   |   Screen View: Unique Hosts
+3 Captured ARP Req/Rep packets, from 8 hosts.   Total size: 480
+_____________________________________________________________________________
+ IP              At MAC Address       Count     Len  MAC Vendor / Hostname      
+-----------------------------------------------------------------------------
+192.168.1.1      11:22:33:44:55:66         1      60  NETGEAR                                                       
+192.168.1.2      21:22:33:44:55:66         1      60  Apple, Inc.                                                   
+192.168.1.8      41:22:33:44:55:66         1      60  Intel Corporate 
+```
+
+---
+
+### 🎯 Pro Tips for CTFs Using Netdiscover:
+
+- **Use with `-r` flag to scan specific subnet range:**
+```bash
+netdiscover -r 10.10.0.0/24
+```
+Faster than default mode for known ranges (e.g., in HackTheBox or TryHackMe labs).
+
+- **Combine with Wireshark or tcpdump:**
+Use `netdiscover` to find active hosts and then monitor them with packet sniffers.
+
+- **Scan for MAC vendor anomalies:**
+Identify devices with spoofed MACs (e.g., "Private" or "Unknown") which might be attacker-controlled.
+
+- **Run in background during a CTF session:**
+Keep `netdiscover` running in a separate terminal to monitor new devices that join the network.
+
+- **Use in stealth mode:**
+Unlike Nmap, this does not actively probe. Good for avoiding detection in blue team CTF scenarios.
+
+---
+
+**Important:** Netdiscover works only on local networks. It cannot discover hosts outside of your subnet.
+
+For maximum effectiveness, always complement passive scanning with active tools (like Nmap) once initial targets are discovered.
+
+
 
 ### Nikto Scanning
 
