@@ -344,28 +344,84 @@ gobuster dir -u http://<HOST_IP> -w /usr/share/wordlists/dirb/common.txt
 Web services often hold CTF flags in directories, source code comments, or misconfigurations. Always inspect thoroughly!
 
 
-### Directory Bursting
+---
 
-To enumerate directories on a webserver, Use wfuzz.
+### 📂 Directory Bursting
 
-```
-> $ wfuzz -u http://<SERVER_IP>/FUZZ/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt 
+To enumerate hidden directories and files on a web server, directory brute-forcing is essential in CTFs.
 
-********************************************************
-* Wfuzz 2.4.5 - The Web Fuzzer                         *
-********************************************************
-
-Target: http://<SERVER_IP>/FUZZ/
+#### Using `wfuzz`:
+```bash
+wfuzz -u http://<HOST_IP>/FUZZ/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
 ```
 
-### Generating Wordlist from the Website
-
+#### Using `gobuster` (faster alternative):
+```bash
+gobuster dir -u http://<HOST_IP>/ -w /usr/share/wordlists/dirb/common.txt -t 50
 ```
-> $ cewl -w wordlist.txt -d 10 -m 1 http://<SERVER_IP>/
 
-$ wc wordlist.txt 
- 354  354 2459 wordlist.txt
+#### Using `dirsearch` (Python-based tool):
+```bash
+python3 dirsearch.py -u http://<HOST_IP>/ -e php,html,txt -x 403,404
 ```
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Try multiple extensions**: CTF flags are often hidden as `.php`, `.txt`, `.bak`, etc.
+```bash
+-gobuster -x php,txt,bak
+```
+
+- **Use recursive mode** in tools like `dirsearch` to go deep into discovered folders.
+
+- **Filter out 403/404 responses** to reduce noise and focus on valid paths.
+
+- **Look for backup files or config leaks** like `.git/`, `config.php`, `.env`.
+
+- **Scan for hidden parameters** using `wfuzz`:
+```bash
+wfuzz -c -z file,/usr/share/wordlists/dirb/common.txt --hc 404 http://<HOST_IP>/index.php?FUZZ=test
+```
+
+- **Check robots.txt and sitemap.xml** for hints to hidden pages.
+
+
+
+---
+
+### 🧠 Generating Wordlist from the Website
+
+Use `cewl` to crawl a target website and generate a custom wordlist based on its content—useful for password attacks, username discovery, or directory bruteforcing.
+
+#### Basic Usage:
+```bash
+cewl -w wordlist.txt -d 10 -m 1 http://<SERVER_IP>/
+```
+
+#### Word Count:
+```bash
+wc wordlist.txt
+# 354  354 2459 wordlist.txt
+```
+
+---
+
+### 🎯 Pro Tips for CTFs:
+
+- **Increase depth (`-d`)** to extract words from deeper pages (e.g., `/about`, `/team`, `/login`).
+- **Use `-e`** to include email addresses in output:
+```bash
+cewl -e -w emails.txt http://<HOST_IP>/
+```
+- **Use in combo with Hydra or Burp** for login brute-force attacks.
+- **Run with a custom user-agent (`-a`)** to bypass basic WAFs:
+```bash
+cewl -a "Mozilla/5.0" -w wordlist.txt http://<HOST_IP>/
+```
+- **Use `--with-numbers`** if the site includes numbers in words (e.g., `admin123`).
+
 
 
 ### SMB is Open
