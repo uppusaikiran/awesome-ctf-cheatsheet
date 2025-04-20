@@ -1,24 +1,35 @@
 # Contributing to Awesome CTF Cheatsheet
 
-The following is a set of guidelines for contributing to Awesome CTF Cheatsheet.
+Thank you for your interest in contributing to the **Awesome CTF Cheatsheet**! We welcome high-quality contributions that make this resource more useful for the CTF and ethical hacking community.
 
-## How Can I Contribute?
+---
 
-### Submitting Pull Requests
+## 🚀 How Can I Contribute?
 
-Feel free to add any new CTF tricks and strategies, just make sure that you follow the contribution guidelines.
+### 🧠 Add CTF Tips and Techniques
 
-### Voting and commenting
+- Submit a pull request (PR) with curated tips, tricks, or tools relevant to solving CTFs or HackTheBox challenges.
+- Ensure new content is clear, actionable, and helpful to practitioners at various skill levels.
 
-Just use GitHub reactions and comments to express your feelings/experience about open suggestions (additions or removals).
+### 🗳️ Review and Provide Feedback
 
-## Contribution Guidelines
+- Use GitHub reactions and comments to vote on or provide feedback for open PRs and issues.
+- Constructive comments help maintain the quality and accuracy of the cheatsheet.
 
-* Please search previous suggestions before making a new one, as yours may be a duplicate.
-* The link should be the name of the package or project.
-* Links and categories should be sorted alphabetically.
-* Add one link per pull-request.
-* Keep descriptions sentance case, concise, clear and simple, and end them with a period/stop.
-* Check your spelling and grammar.
-* New categories, or improvements to the existing ones are also welcome.
-* Make sure your text editor is set to remove trailing whitespace.
+---
+
+## ✅ Contribution Guidelines
+
+Please adhere to the following standards to ensure consistency:
+
+- 🔍 **Search before submitting** – Avoid duplicates by checking existing issues and pull requests.
+- 🔗 **Use proper link formatting** – The link text should be the name of the tool, trick, or project.
+- 🧾 **Alphabetize content** – All links and sections must be listed in alphabetical order.
+- ➕ **One addition per pull request** – This simplifies reviewing and tracking changes.
+- ✍️ **Keep descriptions clean** – Use sentence case, keep it concise, end with a period.
+- 🧹 **Mind the details** – Double-check for grammar, spelling, and trailing whitespace.
+- 🧱 **Structure matters** – You may propose new categories or enhance existing ones where appropriate.
+
+---
+
+We value every contribution. Let's build a resource that empowers the global CTF community. Happy hacking!
